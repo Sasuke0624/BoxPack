@@ -1,0 +1,55 @@
+import { Material, MaterialThickness, Option } from '../types/database';
+
+export interface PriceCalculation {
+  materialCost: number;
+  optionsCost: number;
+  expressCharge: number;
+  totalPrice: number;
+}
+
+export function calculatePrice(
+  width_mm: number,
+  depth_mm: number,
+  height_mm: number,
+  material: Material,
+  thickness: MaterialThickness,
+  selectedOptions: Option[],
+  quantity: number = 1
+): PriceCalculation {
+  const volume = (width_mm * depth_mm * height_mm) / 1000000;
+
+  const baseMaterialCost = material.base_price * thickness.price_multiplier * volume;
+
+  let optionsCost = 0;
+  let expressCharge = 0;
+
+  selectedOptions.forEach(option => {
+    if (option.option_type === 'express') {
+      const totalMm = width_mm + depth_mm + height_mm;
+      expressCharge = totalMm * 3;
+    } else {
+      optionsCost += option.price;
+    }
+  });
+
+  const totalPrice = (baseMaterialCost + optionsCost + expressCharge) * quantity;
+
+  return {
+    materialCost: baseMaterialCost * quantity,
+    optionsCost: optionsCost * quantity,
+    expressCharge: expressCharge * quantity,
+    totalPrice: Math.round(totalPrice),
+  };
+}
+
+export function validateDimensions(width: number, depth: number, height: number): string | null {
+  if (width <= 0 || depth <= 0 || height <= 0) {
+    return 'すべてのサイズは0より大きい値を入力してください';
+  }
+
+  if (width > 3000 || depth > 3000 || height > 3000) {
+    return 'サイズは3000mm以下で入力してください';
+  }
+
+  return null;
+}
