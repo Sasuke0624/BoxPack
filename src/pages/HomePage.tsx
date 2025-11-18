@@ -66,7 +66,7 @@ export function HomePage({ onNavigate, onSelectMaterial }: HomePageProps) {
     <div className="min-h-screen bg-white">
       {carouselImages.length > 0 && <Carousel images={carouselImages} />}
 
-      {/* <section className="relative bg-gradient-to-b from-gray-50 to-white py-20 lg:py-32">
+      <section className="relative bg-gradient-to-b from-gray-50 to-white py-20 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
@@ -81,14 +81,14 @@ export function HomePage({ onNavigate, onSelectMaterial }: HomePageProps) {
             </p>
             <button
               onClick={() => onNavigate('quote')}
-              className="inline-flex items-center px-8 py-4 text-lg font-medium text-white bg-amber-600 rounded-lg hover:bg-gray-800 transition-all transform hover:scale-105"
+              className="inline-flex items-center px-8 py-4 text-lg font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-all transform hover:scale-105"
             >
               今すぐ見積もり作成
               <ArrowRight className="ml-2 w-5 h-5" />
             </button>
           </div>
         </div>
-      </section> */}
+      </section>
 
       {/* <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -301,7 +301,7 @@ export function HomePage({ onNavigate, onSelectMaterial }: HomePageProps) {
           <h2 className="text-3xl lg:text-4xl font-bold mb-6">
             今すぐ始めましょう
           </h2>
-          <p className="text-xl text-gray-300 mb-8 leading-relaxed">
+          <p className="text-xl text-gray-100 mb-8 leading-relaxed">
             木箱調達の時間を大幅に短縮。
             <br />
             ストレスフリーな体験を、今すぐお試しください。

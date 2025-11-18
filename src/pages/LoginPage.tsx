@@ -60,7 +60,7 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <Package className="w-12 h-12 text-gray-900" />
+            <img src="./src/img/logo.png" alt="LOGO" className="w-12 h-12" />
           </div>
           <h2 className="text-3xl font-bold text-gray-900">
             {isLogin ? 'ログイン' : '新規登録'}
@@ -156,7 +156,7 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full px-6 py-4 text-lg font-medium text-white bg-amber-600 rounded-lg hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-6 py-4 text-lg font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? '処理中...' : isLogin ? 'ログイン' : '登録'}
             </button>

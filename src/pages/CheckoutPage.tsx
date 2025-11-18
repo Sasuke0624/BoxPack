@@ -123,7 +123,7 @@ export function CheckoutPage({ onNavigate }: CheckoutPageProps) {
           </p>
           <button
             onClick={() => onNavigate('mypage')}
-            className="px-6 py-3 text-white bg-amber-600 rounded-lg hover:bg-gray-800 transition-colors"
+            className="px-6 py-3 text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-colors"
           >
             マイページへ
           </button>
@@ -325,7 +325,7 @@ export function CheckoutPage({ onNavigate }: CheckoutPageProps) {
               <button
                 type="submit"
                 disabled={loading || !agreedToTerms}
-                className="w-full px-6 py-4 text-lg font-medium text-white bg-amber-600 rounded-lg hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-6 py-4 text-lg font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? '処理中...' : '注文を確定する'}
               </button>

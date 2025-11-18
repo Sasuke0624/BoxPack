@@ -151,7 +151,7 @@ export function MyPage({ onNavigate }: MyPageProps) {
                   </p>
                   <button
                     onClick={() => onNavigate('quote')}
-                    className="px-6 py-3 text-white bg-amber-600 rounded-lg hover:bg-gray-800 transition-colors"
+                    className="px-6 py-3 text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-colors"
                   >
                     見積もり作成へ
                   </button>
