@@ -12,7 +12,7 @@ export function MaterialCard({ material, onSelect }: MaterialCardProps) {
       <div className="aspect-square bg-gray-100 overflow-hidden">
         {material.image_url ? (
           <img
-            src={material.image_url}
+            src={`.${material.image_url}`}
             alt={material.name}
             className="w-full h-full object-cover hover:scale-105 transition-transform"
           />
@@ -40,7 +40,7 @@ export function MaterialCard({ material, onSelect }: MaterialCardProps) {
 
           <button
             onClick={() => onSelect(material)}
-            className="w-full flex items-center justify-center px-4 py-3 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-all"
+            className="w-full flex items-center justify-center px-4 py-3 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-gray-800 transition-all"
           >
             <ShoppingCart className="w-4 h-4 mr-2" />
             選択する

@@ -64,7 +64,7 @@ export function Header({ onNavigate, currentPage }: HeaderProps) {
             >
               <ShoppingCart className="w-6 h-6" />
               {items.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-gray-900 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                   {items.length}
                 </span>
               )}
@@ -88,7 +88,7 @@ export function Header({ onNavigate, currentPage }: HeaderProps) {
             ) : (
               <button
                 onClick={() => onNavigate('login')}
-                className="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-gray-800 transition-colors"
               >
                 ログイン
               </button>

@@ -16,9 +16,9 @@ export function calculatePrice(
   selectedOptions: SelectedOption[],
   quantity: number = 1
 ): PriceCalculation {
-  const volume = (width_mm * depth_mm * height_mm) / 1000000;
+  const volume = width_mm + depth_mm + height_mm;
 
-  const baseMaterialCost = material.base_price * thickness.price_multiplier * volume;
+  const baseMaterialCost = material.base_price * volume;
 
   let optionsCost = 0;
   let expressCharge = 0;
@@ -48,7 +48,7 @@ export function validateDimensions(width: number, depth: number, height: number)
     return 'すべてのサイズは0より大きい値を入力してください';
   }
 
-  if (width > 3000 || depth > 3000 || height > 3000) {
+  if (width > 2400 || depth > 2400 || height > 2400) {
     return 'サイズは3000mm以下で入力してください';
   }
 

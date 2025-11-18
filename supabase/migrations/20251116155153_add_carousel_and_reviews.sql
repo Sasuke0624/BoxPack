@@ -62,7 +62,7 @@ CREATE INDEX IF NOT EXISTS idx_carousel_images_active ON carousel_images(is_acti
 CREATE INDEX IF NOT EXISTS idx_customer_reviews_created ON customer_reviews(created_at DESC);
 
 INSERT INTO carousel_images (image_url, title, description, sort_order) VALUES
-('https://images.pexels.com/photos/3962286/pexels-photo-3962286.jpeg?auto=compress&cs=tinysrgb&w=1600', 'BOXPACKについて', 'サイズを入力するだけで、すぐに価格が出て注文できる新しい木箱調達体験', 1),
+('./img/box.jpg', 'BOXPACKについて', 'サイズを入力するだけで、すぐに価格が出て注文できる新しい木箱調達体験', 1),
 ('https://images.pexels.com/photos/5632395/pexels-photo-5632395.jpeg?auto=compress&cs=tinysrgb&w=1600', '高品質な板材', '7種類の板材から、用途に合わせて選択できます', 2),
 ('https://images.pexels.com/photos/5632400/pexels-photo-5632400.jpeg?auto=compress&cs=tinysrgb&w=1600', 'すぐに見積もり', 'リアルタイムで価格計算、待ち時間なし', 3)
 ON CONFLICT DO NOTHING;

@@ -32,7 +32,7 @@ export function CartPage({ onNavigate }: CartPageProps) {
             </p>
             <button
               onClick={() => onNavigate('quote')}
-              className="px-8 py-3 text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
+              className="px-8 py-3 text-white bg-amber-600 rounded-lg hover:bg-gray-800 transition-colors"
             >
               見積もり作成へ
             </button>
@@ -128,7 +128,7 @@ export function CartPage({ onNavigate }: CartPageProps) {
 
               <button
                 onClick={handleCheckout}
-                className="w-full px-6 py-4 text-lg font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-all"
+                className="w-full px-6 py-4 text-lg font-medium text-white bg-amber-600 rounded-lg hover:bg-gray-800 transition-all"
               >
                 {user ? '購入手続きへ' : 'ログインして購入'}
               </button>

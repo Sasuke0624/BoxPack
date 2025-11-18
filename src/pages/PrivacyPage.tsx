@@ -107,7 +107,7 @@ export function PrivacyPage({ onNavigate }: PrivacyPageProps) {
           <div className="mt-8 text-center">
             <button
               onClick={() => onNavigate('home')}
-              className="px-8 py-3 text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
+              className="px-8 py-3 text-white bg-amber-600 rounded-lg hover:bg-gray-800 transition-colors"
             >
               ホームに戻る
             </button>

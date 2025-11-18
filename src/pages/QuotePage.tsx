@@ -264,7 +264,7 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
                         onClick={() => setSelectedThickness(thickness)}
                         className={`px-6 py-3 border-2 rounded-lg font-medium transition-all ${
                           selectedThickness?.id === thickness.id
-                            ? 'border-gray-900 bg-gray-900 text-white'
+                            ? 'border-gray-900 bg-amber-600 text-white'
                             : 'border-gray-300 text-gray-700 hover:border-gray-900'
                         }`}
                       >
@@ -297,7 +297,7 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
                   </select>
                   <button
                     onClick={addOption}
-                    className="px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-all flex items-center"
+                    className="px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-gray-800 transition-all flex items-center"
                   >
                     <Plus className="w-5 h-5" />
                   </button>
@@ -402,7 +402,7 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
                   <div className="pt-6 border-t border-gray-200 space-y-4">
                     <button
                       onClick={handleAddToCart}
-                      className="w-full flex items-center justify-center px-6 py-4 text-lg font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-all"
+                      className="w-full flex items-center justify-center px-6 py-4 text-lg font-medium text-white bg-amber-600 rounded-lg hover:bg-gray-800 transition-all"
                     >
                       <ShoppingCart className="w-5 h-5 mr-2" />
                       カートに追加

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { CarouselImage } from '../types/database';
 
@@ -9,16 +9,40 @@ interface CarouselProps {
 export function Carousel({ images }: CarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [autoPlayEnabled, setAutoPlayEnabled] = useState(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Fixed image width to maintain consistent size across all devices
+  const imageWidth = 400; // pixels
+  const imageGap = 16; // pixels for spacing between images
 
+  // Auto-scroll functionality - move one image at a time
   useEffect(() => {
     if (!autoPlayEnabled || images.length === 0) return;
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % images.length);
-    }, 5000);
+      setCurrentIndex((prev) => {
+        const nextIndex = prev + 1;
+        // If we've reached the end, loop back to start
+        if (nextIndex >= images.length) {
+          return 0;
+        }
+        return nextIndex;
+      });
+    }, 3000);
 
     return () => clearInterval(interval);
   }, [autoPlayEnabled, images.length]);
+
+  // Scroll to current index when it changes
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      const scrollPosition = currentIndex * (imageWidth + imageGap);
+      scrollContainerRef.current.scrollTo({
+        left: scrollPosition,
+        behavior: 'smooth',
+      });
+    }
+  }, [currentIndex, imageWidth, imageGap]);
 
   if (images.length === 0) {
     return null;
@@ -26,12 +50,18 @@ export function Carousel({ images }: CarouselProps) {
 
   const goToPrevious = () => {
     setAutoPlayEnabled(false);
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+    setCurrentIndex((prev) => {
+      const newIndex = prev - 1;
+      return newIndex < 0 ? images.length - 1 : newIndex;
+    });
   };
 
   const goToNext = () => {
     setAutoPlayEnabled(false);
-    setCurrentIndex((prev) => (prev + 1) % images.length);
+    setCurrentIndex((prev) => {
+      const nextIndex = prev + 1;
+      return nextIndex >= images.length ? 0 : nextIndex;
+    });
   };
 
   const goToSlide = (index: number) => {
@@ -39,46 +69,60 @@ export function Carousel({ images }: CarouselProps) {
     setCurrentIndex(index);
   };
 
-  const currentImage = images[currentIndex];
-
   return (
-    <div className="relative w-full bg-gray-900 overflow-hidden">
-      <div className="aspect-video relative">
-        <img
-          src={currentImage.image_url}
-          alt={currentImage.title}
-          className="w-full h-full object-cover"
-        />
-
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end">
-          <div className="p-8 text-white w-full">
-            <h2 className="text-3xl font-bold mb-2">{currentImage.title}</h2>
-            <p className="text-lg text-gray-200">{currentImage.description}</p>
-          </div>
-        </div>
-
+    <div className="relative w-full bg-gray-50 overflow-hidden" style={{ height: '35vh' }}>
+      <div className="relative h-full flex items-center">
         <button
           onClick={goToPrevious}
-          className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/20 hover:bg-white/40 rounded-full transition-all"
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 bg-white/20 hover:bg-white/40 rounded-full transition-all"
         >
           <ChevronLeft className="w-8 h-8 text-white" />
         </button>
 
+        <div
+          ref={scrollContainerRef}
+          className="flex h-full overflow-x-auto scrollbar-hide scroll-smooth px-4"
+          style={{ gap: `${imageGap}px` }}
+        >
+          {images.map((image, index) => (
+            <div
+              key={index}
+              className="flex-shrink-0 relative group rounded-lg overflow-hidden border-2 border-white/20 hover:border-white/40 transition-all"
+              style={{
+                width: `${imageWidth}px`,
+                height: '100%',
+              }}
+            >
+              <img
+                src={`.${image.image_url}`}
+                alt={image.title}
+                className="w-full h-full object-contain"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end">
+                <div className="p-4 text-white w-full">
+                  <h3 className="text-xl font-bold mb-1">{image.title}</h3>
+                  <p className="text-sm text-gray-200 line-clamp-2">{image.description}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
         <button
           onClick={goToNext}
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/20 hover:bg-white/40 rounded-full transition-all"
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 bg-white/20 hover:bg-white/40 rounded-full transition-all"
         >
           <ChevronRight className="w-8 h-8 text-white" />
         </button>
       </div>
 
-      <div className="flex justify-center gap-2 p-4 bg-gray-900">
+      <div className="flex justify-center gap-2 p-4 bg-amber-600">
         {images.map((_, index) => (
           <button
             key={index}
             onClick={() => goToSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all ${
-              index === currentIndex ? 'bg-white w-8' : 'bg-white/40 hover:bg-white/60'
+            className={`h-3 rounded-full transition-all ${
+              index === currentIndex ? 'bg-white w-8' : 'bg-white/40 hover:bg-white/60 w-3'
             }`}
           />
         ))}
