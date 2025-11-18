@@ -15,6 +15,7 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
   const [height, setHeight] = useState('');
   const [quantity, setQuantity] = useState(1);
 
+  const [materials, setMaterials] = useState<Material[]>([]);
   const [thicknesses, setThicknesses] = useState<MaterialThickness[]>([]);
   const [options, setOptions] = useState<Option[]>([]);
 
@@ -22,12 +23,21 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
   const [selectedThickness, setSelectedThickness] = useState<MaterialThickness | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<SelectedOption[]>([]);
   const [selectedOptionDropdown, setSelectedOptionDropdown] = useState<string>('');
+  const [expressOption, setExpressOption] = useState<Option | null>(null);
+  const [expressSelected, setExpressSelected] = useState(false);
+  const handleMaterialChange = (materialId: string) => {
+    const material = materials.find((m) => m.id === materialId) || null;
+    setSelectedMaterial(material);
+    setSelectedThickness(null);
+  };
+
 
   const [error, setError] = useState<string | null>(null);
 
   const { addToCart } = useCart();
 
   useEffect(() => {
+    loadMaterials();
     loadOptions();
   }, []);
 
@@ -36,6 +46,20 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
       loadThicknesses(selectedMaterial.id);
     }
   }, [selectedMaterial]);
+
+  const loadMaterials = async () => {
+    const { data } = await supabase
+      .from('materials')
+      .select('*')
+      .eq('is_active', true)
+      .order('sort_order');
+    if (data) {
+      setMaterials(data);
+      if (!selectedMaterial && data.length > 0) {
+        setSelectedMaterial(data[0]);
+      }
+    }
+  };
 
   const loadThicknesses = async (materialId: string) => {
     const { data } = await supabase
@@ -59,7 +83,10 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
       .eq('is_active', true)
       .order('sort_order');
     if (data) {
-      setOptions(data);
+      const express = data.find((o) => o.option_type === 'express') || null;
+      const normalOptions = data.filter((o) => o.option_type !== 'express');
+      setExpressOption(express);
+      setOptions(normalOptions);
     }
   };
 
@@ -117,7 +144,12 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
       return null;
     }
 
-    return calculatePrice(w, d, h, selectedMaterial, selectedThickness, selectedOptions, quantity);
+    const allOptions: SelectedOption[] = [...selectedOptions];
+    if (expressSelected && expressOption) {
+      allOptions.push({ option: expressOption, quantity: 1 });
+    }
+
+    return calculatePrice(w, d, h, selectedMaterial, selectedThickness, allOptions, quantity);
   };
 
   const handleAddToCart = () => {
@@ -139,13 +171,18 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
     const calc = calculation();
     if (!calc) return;
 
+    const allOptionsForCart: SelectedOption[] = [...selectedOptions];
+    if (expressSelected && expressOption) {
+      allOptionsForCart.push({ option: expressOption, quantity: 1 });
+    }
+
     addToCart({
       width_mm: w,
       depth_mm: d,
       height_mm: h,
       material: selectedMaterial,
       thickness: selectedThickness,
-      selectedOptions,
+      selectedOptions: allOptionsForCart,
       quantity,
       totalPrice: calc.totalPrice,
     });
@@ -250,6 +287,38 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
             </div>
 
             <div className="bg-white rounded-xl shadow-sm p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">材料選択</h2>
+              {materials.length > 0 ? (
+                <div className="space-y-4">
+                  <select
+                    value={selectedMaterial?.id || ''}
+                    onChange={(e) => handleMaterialChange(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  >
+                    {materials.map((material) => (
+                      <option key={material.id} value={material.id}>
+                        {material.name}
+                      </option>
+                    ))}
+                  </select>
+                  {selectedMaterial && (
+                    <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 leading-relaxed">
+                      <p className="font-semibold text-gray-900 mb-1">
+                        {selectedMaterial.name}
+                      </p>
+                      <p className="mb-2">{selectedMaterial.description}</p>
+                      <p className="text-gray-600">
+                        基本単価: ¥{selectedMaterial.base_price.toLocaleString()}/mm
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-gray-600">利用可能な材料を読み込み中です...</p>
+              )}
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">板厚選択</h2>
 
               {selectedMaterial ? (
@@ -275,6 +344,37 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
                 </div>
               ) : (
                 <p className="text-gray-600">先にホームページから板材を選択してください</p>
+              )}
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">納期オプション</h2>
+
+              {expressOption ? (
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="font-semibold text-gray-900 mb-1">
+                      即納オプション
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      通常より早くお届けするオプションです。サイズに応じて即納料金が自動計算されます。<br />
+                      優先生産で納期短縮（+3円/mm）
+                    </p>
+                  </div>
+                  <label className="inline-flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 text-amber-600 border-gray-300 rounded"
+                      checked={expressSelected}
+                      onChange={(e) => setExpressSelected(e.target.checked)}
+                    />
+                    <span className="text-sm text-gray-700">即納を希望する</span>
+                  </label>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-600">
+                  即納オプションは現在ご利用いただけません。
+                </p>
               )}
             </div>
 
@@ -321,22 +421,32 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
                         </div>
 
                         <div className="space-y-3">
-                          <div className="flex items-center gap-3">
-                            <label className="text-sm font-medium text-gray-700">
-                              数量:
-                            </label>
-                            <input
-                              type="number"
-                              min="1"
-                              value={selected.quantity}
-                              onChange={(e) =>
-                                updateOptionQuantity(
-                                  selected.option.id,
-                                  Math.max(1, parseInt(e.target.value) || 1)
-                                )
-                              }
-                              className="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                            />
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-3">
+                              <label className="text-sm font-medium text-gray-700">
+                                数量:
+                              </label>
+                              <input
+                                type="number"
+                                min="1"
+                                value={selected.quantity}
+                                onChange={(e) =>
+                                  updateOptionQuantity(
+                                    selected.option.id,
+                                    Math.max(1, parseInt(e.target.value) || 1)
+                                  )
+                                }
+                                className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                              />
+                              <span className="text-sm text-gray-700">{selected.option.unit}</span>
+                            </div>
+                            <div className="text-xs text-gray-600">
+                              数量 ({selected.quantity} {selected.option.unit}) × 単価 ¥
+                              {selected.option.price.toLocaleString()} ={' '}
+                              <span className="font-semibold text-gray-900">
+                                ¥{(selected.option.price * selected.quantity).toLocaleString()}
+                              </span>
+                            </div>
                           </div>
 
                           {selected.option.option_type === 'buckle' && (

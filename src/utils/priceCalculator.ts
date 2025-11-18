@@ -12,7 +12,7 @@ export function calculatePrice(
   depth_mm: number,
   height_mm: number,
   material: Material,
-  thickness: MaterialThickness,
+  _thickness: MaterialThickness,
   selectedOptions: SelectedOption[],
   quantity: number = 1
 ): PriceCalculation {
@@ -49,7 +49,7 @@ export function validateDimensions(width: number, depth: number, height: number)
   }
 
   if (width > 2400 || depth > 2400 || height > 2400) {
-    return 'サイズは3000mm以下で入力してください';
+    return 'サイズは2400mm以下で入力してください';
   }
 
   return null;

@@ -24,6 +24,7 @@ export interface Option {
   option_type: 'handle' | 'buckle' | 'reinforcement' | 'express';
   is_active: boolean;
   sort_order: number;
+  unit: string;
 }
 
 export interface SavedTemplate {

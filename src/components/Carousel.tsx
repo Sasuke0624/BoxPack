@@ -74,9 +74,9 @@ export function Carousel({ images }: CarouselProps) {
       <div className="relative h-full flex items-center">
         <button
           onClick={goToPrevious}
-          className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 bg-white/20 hover:bg-white/40 rounded-full transition-all"
+          className="group absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/90 shadow-lg shadow-black/20 border border-white/70 hover:bg-amber-500 hover:border-amber-500 transition-all focus:outline-none focus:ring-2 focus:ring-amber-400"
         >
-          <ChevronLeft className="w-8 h-8 text-white" />
+          <ChevronLeft className="w-7 h-7 text-gray-700 group-hover:text-white transition-colors" />
         </button>
 
         <div
@@ -98,21 +98,21 @@ export function Carousel({ images }: CarouselProps) {
                 alt={image.title}
                 className="w-full h-full object-contain"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end">
+              {/* <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end">
                 <div className="p-4 text-white w-full">
                   <h3 className="text-xl font-bold mb-1">{image.title}</h3>
                   <p className="text-sm text-gray-200 line-clamp-2">{image.description}</p>
                 </div>
-              </div>
+              </div> */}
             </div>
           ))}
         </div>
 
         <button
           onClick={goToNext}
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 bg-white/20 hover:bg-white/40 rounded-full transition-all"
+          className="group absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/90 shadow-lg shadow-black/20 border border-white/70 hover:bg-amber-500 hover:border-amber-500 transition-all focus:outline-none focus:ring-2 focus:ring-amber-400"
         >
-          <ChevronRight className="w-8 h-8 text-white" />
+          <ChevronRight className="w-7 h-7 text-gray-700 group-hover:text-white transition-colors" />
         </button>
       </div>
 
