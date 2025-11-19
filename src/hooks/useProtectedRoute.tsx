@@ -1,14 +1,23 @@
 import { useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
-export function useProtectedRoute(onUnauthenticated: () => void) {
-  const { user, loading } = useAuth();
+export function useProtectedRoute(onUnauthenticated: () => void, requiredRole?: 'admin' | 'user') {
+  const { user, loading, profile } = useAuth();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (loading) {
+      return;
+    }
+
+    if (!user) {
+      onUnauthenticated();
+      return;
+    }
+
+    if (requiredRole && profile?.role !== requiredRole) {
       onUnauthenticated();
     }
-  }, [user, loading, onUnauthenticated]);
+  }, [user, profile, loading, requiredRole, onUnauthenticated]);
 
-  return { user, loading };
+  return { user, loading, profile };
 }

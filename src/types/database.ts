@@ -84,6 +84,7 @@ export interface Profile {
   company_name: string;
   phone: string;
   points: number;
+  role: 'user' | 'admin';
   created_at: string;
   updated_at: string;
 }
