@@ -345,7 +345,7 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
                       onChange={(e) => setBoardSize(e.target.value as '3x6' | '4x8')}
                       className="mr-2 h-4 w-4 text-amber-600 border-gray-300 focus:ring-amber-500"
                     />
-                    <span className="text-sm text-gray-700">3×6</span>
+                    <span className="text-sm text-gray-700">{'3×6 (910×1820mm)'}</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -355,7 +355,7 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
                       onChange={(e) => setBoardSize(e.target.value as '4x8' | '3x6')}
                       className="mr-2 h-4 w-4 text-amber-600 border-gray-300 focus:ring-amber-500"
                     />
-                    <span className="text-sm text-gray-700">4×8</span>
+                    <span className="text-sm text-gray-700">{'4×8 (1220×2440mm)'}</span>
                   </label>
                 </div>
               </div>
