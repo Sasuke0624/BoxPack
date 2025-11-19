@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { AlertCircle, Calculator, ShoppingCart, Download, Plus, Trash2 } from 'lucide-react';
+import { AlertCircle, Calculator, ShoppingCart, Download, Plus, Trash2, HelpCircle, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Material, MaterialThickness, Option, SelectedOption } from '../types/database';
 import { calculatePrice, validateDimensions } from '../utils/priceCalculator';
 import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
 
 interface QuotePageProps {
   onNavigate: (page: string) => void;
@@ -14,6 +15,11 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
   const [depth, setDepth] = useState('');
   const [height, setHeight] = useState('');
   const [quantity, setQuantity] = useState(1);
+  const [boardSize, setBoardSize] = useState<'3x6' | '4x8'>('3x6');
+  const [fittingDistance, setFittingDistance] = useState('');
+  const [specialRequests, setSpecialRequests] = useState('');
+  const [showFittingImageModal, setShowFittingImageModal] = useState(false);
+  const [dimensionWarning, setDimensionWarning] = useState<string | null>(null);
 
   const [materials, setMaterials] = useState<Material[]>([]);
   const [thicknesses, setThicknesses] = useState<MaterialThickness[]>([]);
@@ -35,6 +41,7 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
   const [error, setError] = useState<string | null>(null);
 
   const { addToCart } = useCart();
+  const { user } = useAuth();
 
   useEffect(() => {
     loadMaterials();
@@ -46,6 +53,27 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
       loadThicknesses(selectedMaterial.id);
     }
   }, [selectedMaterial]);
+
+  // Real-time dimension validation and board size auto-selection
+  useEffect(() => {
+    const w = parseInt(width) || 0;
+    const d = parseInt(depth) || 0;
+    const h = parseInt(height) || 0;
+
+    // Check for dimension warning (>= 2400mm)
+    if (w >= 2400 || d >= 2400 || h >= 2400) {
+      setDimensionWarning('いずれかのサイズが2400mm以上です。このサイズで問題ありませんか？');
+    } else {
+      setDimensionWarning(null);
+    }
+
+    // Auto-select board size based on dimensions
+    if (w >= 1820 || d >= 1820 || h >= 1820) {
+      setBoardSize('4x8');
+    } else if (w > 0 && d > 0 && h > 0 && w <= 1820 && d <= 1820 && h <= 1820) {
+      setBoardSize('3x6');
+    }
+  }, [width, depth, height]);
 
   const loadMaterials = async () => {
     const { data } = await supabase
@@ -153,6 +181,12 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
   };
 
   const handleAddToCart = () => {
+    // Check if user is logged in
+    if (!user) {
+      onNavigate('login');
+      return;
+    }
+
     const w = parseInt(width);
     const d = parseInt(depth);
     const h = parseInt(height);
@@ -165,6 +199,12 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
 
     if (!selectedMaterial || !selectedThickness) {
       setError('材料と厚みを選択してください');
+      return;
+    }
+
+    // Show confirmation alert
+    const confirmed = window.confirm('注文は内寸法で行います。このサイズで間違いありませんか？');
+    if (!confirmed) {
       return;
     }
 
@@ -284,6 +324,41 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
                   className="w-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                 />
               </div>
+
+              {dimensionWarning && (
+                <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start space-x-3">
+                  <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-yellow-800 text-sm">{dimensionWarning}</p>
+                </div>
+              )}
+
+              <div className="mt-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  板材サイズ
+                </label>
+                <div className="flex gap-4">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      value="3x6"
+                      checked={boardSize === '3x6'}
+                      onChange={(e) => setBoardSize(e.target.value as '3x6' | '4x8')}
+                      className="mr-2 h-4 w-4 text-amber-600 border-gray-300 focus:ring-amber-500"
+                    />
+                    <span className="text-sm text-gray-700">3×6</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      value="4x8"
+                      checked={boardSize === '4x8'}
+                      onChange={(e) => setBoardSize(e.target.value as '4x8' | '3x6')}
+                      className="mr-2 h-4 w-4 text-amber-600 border-gray-300 focus:ring-amber-500"
+                    />
+                    <span className="text-sm text-gray-700">4×8</span>
+                  </label>
+                </div>
+              </div>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm p-8">
@@ -382,6 +457,28 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
               <h2 className="text-2xl font-bold text-gray-900 mb-6">オプション</h2>
 
               <div className="space-y-4">
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    端から最初の金具までの距離（mm）
+                    <button
+                      type="button"
+                      onClick={() => setShowFittingImageModal(true)}
+                      className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-600 hover:text-gray-900 transition-colors"
+                      aria-label="ヘルプ"
+                    >
+                      <HelpCircle className="w-4 h-4" />
+                    </button>
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={fittingDistance}
+                    onChange={(e) => setFittingDistance(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    placeholder="例: 50"
+                  />
+                </div>
+
                 <div className="flex gap-2">
                   <select
                     value={selectedOptionDropdown}
@@ -476,6 +573,16 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
                 )}
               </div>
             </div>
+
+            <div className="bg-white rounded-xl shadow-sm p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">特記事項・注文詳細</h2>
+              <textarea
+                value={specialRequests}
+                onChange={(e) => setSpecialRequests(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent min-h-[120px] resize-y"
+                placeholder="ご要望や特記事項があればご記入ください"
+              />
+            </div>
           </div>
 
           <div className="lg:col-span-1">
@@ -533,6 +640,32 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
           </div>
         </div>
       </div>
+
+      {/* Fitting Distance Image Modal */}
+      {showFittingImageModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowFittingImageModal(false)}>
+          <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-auto relative" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center">
+              <h3 className="text-xl font-bold text-gray-900">端から最初の金具までの距離</h3>
+              <button
+                onClick={() => setShowFittingImageModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="閉じる"
+              >
+                <X className="w-6 h-6 text-gray-600" />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-gray-700 mb-4">
+                この距離は、箱の端から最初のベンドバックルまでの距離を指します。
+              </p>
+              <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-center min-h-[300px]">
+                <img src="./src/img/edge_dis.jpg" alt="端から最初の金具までの距離の説明図" className="max-w-full h-auto rounded-lg" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

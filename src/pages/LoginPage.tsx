@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Package, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 interface LoginPageProps {
@@ -25,6 +25,7 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
 
     try {
       if (isLogin) {
+        // onNavigate('mypage');
         const { error } = await signIn(email, password);
         if (error) {
           setError('ログインに失敗しました。メールアドレスとパスワードを確認してください。');
@@ -45,7 +46,7 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
         if (error) {
           setError('登録に失敗しました。入力内容を確認してください。');
         } else {
-          onNavigate('mypage');
+        onNavigate('mypage');
         }
       }
     } catch (err) {

@@ -42,6 +42,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password,
     });
 
+    console.log("signUp", data, error);
+
     if (!error && data.user) {
       const { error: profileError } = await supabase.from('profiles').insert({
         id: data.user.id,
@@ -51,21 +53,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         phone: userData.phone || '',
         points: 0,
       });
-
+      console.log("profileError", profileError);
       if (profileError) {
         return { error: profileError };
       }
     }
 
-    return { error };
+    return { error: error };
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: fetchedData, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    return { error };
+
+    console.log("signIn", fetchedData, error);
+    return { error: error };
   };
 
   const signOut = async () => {
