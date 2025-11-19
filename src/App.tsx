@@ -11,8 +11,9 @@ import { CheckoutPage } from './pages/CheckoutPage';
 import { MyPage } from './pages/MyPage';
 import { TermsPage } from './pages/TermsPage';
 import { PrivacyPage } from './pages/PrivacyPage';
+import { AdminPage } from './pages/AdminPage';
 
-type Page = 'home' | 'quote' | 'cart' | 'login' | 'checkout' | 'mypage' | 'terms' | 'privacy';
+type Page = 'home' | 'quote' | 'cart' | 'login' | 'checkout' | 'mypage' | 'terms' | 'privacy' | 'admin';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
@@ -35,6 +36,8 @@ function App() {
         return <TermsPage onNavigate={setCurrentPage} />;
       case 'privacy':
         return <PrivacyPage onNavigate={setCurrentPage} />;
+      case 'admin':
+        return <AdminPage onNavigate={setCurrentPage} />;
       default:
         return <HomePage onNavigate={setCurrentPage} />;
     }
@@ -44,11 +47,16 @@ function App() {
     <AuthProvider>
       <CartProvider>
         <div className="min-h-screen bg-white flex flex-col">
-          <Header onNavigate={setCurrentPage} currentPage={currentPage} />
-          <main className="flex-grow">
-            {renderPage()}
-          </main>
-          <Footer onNavigate={setCurrentPage} />
+          {currentPage !== 'admin' && (
+            <>
+              <Header onNavigate={setCurrentPage} currentPage={currentPage} />
+              <main className="flex-grow">
+                {renderPage()}
+              </main>
+              <Footer onNavigate={setCurrentPage} />
+            </>
+          )}
+          {currentPage === 'admin' && renderPage()}
         </div>
       </CartProvider>
     </AuthProvider>

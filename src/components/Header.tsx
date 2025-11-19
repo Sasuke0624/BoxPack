@@ -9,7 +9,7 @@ interface HeaderProps {
 }
 
 export function Header({ onNavigate, currentPage }: HeaderProps) {
-  const { user, signOut } = useAuth();
+  const { user, signOut, profile } = useAuth();
   const { items } = useCart();
 
   const handleSignOut = async () => {
@@ -76,6 +76,16 @@ export function Header({ onNavigate, currentPage }: HeaderProps) {
                 }`}
               >
                 マイページ
+              </button>
+            )}
+            {profile?.role === 'admin' && (
+              <button
+                onClick={() => onNavigate('admin')}
+                className={`text-sm font-medium transition-colors ${
+                  currentPage === 'admin' ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                管理ページ
               </button>
             )}
           </nav>
