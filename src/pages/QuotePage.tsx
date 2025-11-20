@@ -693,7 +693,7 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
                   onClick={handleConfirmAddToCart}
                   className="flex-1 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors font-medium"
                 >
-                  確認してカートに追加
+                  確認
                 </button>
               </div>
             </div>

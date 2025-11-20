@@ -178,11 +178,17 @@ export function MyPage({ onNavigate }: MyPageProps) {
                         </div>
                       </div>
 
-                      <div className="grid md:grid-cols-2 gap-4 mb-4">
+                      <div className="grid md:grid-cols-3 gap-4 mb-4">
                         <div>
                           <p className="text-sm text-gray-600 mb-1">注文日</p>
                           <p className="text-gray-900">
                             {new Date(order.created_at).toLocaleDateString('ja-JP')}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600 mb-1">配送予定日</p>
+                          <p className="text-gray-900">
+                            {order.shipping_eta ? new Date(order.shipping_eta).toLocaleDateString('ja-JP') : '-'}
                           </p>
                         </div>
                         <div>
