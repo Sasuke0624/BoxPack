@@ -261,7 +261,7 @@ export function AdminInventory() {
   const lowStockCount = inventory.filter(inv => inv.current_stock <= inv.min_stock_level).length;
 
   return (
-    <div className='h-[calc(90vh-53px)] overflow-auto'>
+    <div className='overflow-auto'>
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-3xl font-bold text-gray-900">在庫管理</h2>

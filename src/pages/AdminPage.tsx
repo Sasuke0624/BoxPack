@@ -187,7 +187,7 @@ export function AdminPage({ onNavigate }: AdminPageProps) {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="max-h-[100vh] flex-1 flex flex-col min-w-0">
         {/* Top Header */}
         <header className="bg-white border-b border-gray-200 px-4 py-4 lg:px-8">
           <div className="flex items-center justify-between">
@@ -438,7 +438,7 @@ function AdminMaterials() {
   };
 
   return (
-    <div className='h-[calc(90vh-53px)] overflow-auto'>
+    <div className='overflow-auto'>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl font-bold text-gray-900">板材管理</h2>
         <button
