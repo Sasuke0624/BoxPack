@@ -104,7 +104,7 @@ export function AdminOptions() {
   };
 
   return (
-    <div>
+    <div className='h-[calc(90vh-53px)] overflow-auto'>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl font-bold text-gray-900">オプション管理</h2>
         <button

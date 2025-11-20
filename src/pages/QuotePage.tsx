@@ -20,6 +20,8 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
   const [specialRequests, setSpecialRequests] = useState('');
   const [showFittingImageModal, setShowFittingImageModal] = useState(false);
   const [dimensionWarning, setDimensionWarning] = useState<string | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingAddToCart, setPendingAddToCart] = useState<(() => void) | null>(null);
 
   const [materials, setMaterials] = useState<Material[]>([]);
   const [thicknesses, setThicknesses] = useState<MaterialThickness[]>([]);
@@ -202,32 +204,43 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
       return;
     }
 
-    // Show confirmation alert
-    const confirmed = window.confirm('注文は内寸法で行います。このサイズで間違いありませんか？');
-    if (!confirmed) {
-      return;
-    }
+    // Show confirmation modal
+    setPendingAddToCart(() => () => {
+      const calc = calculation();
+      if (!calc) return;
 
-    const calc = calculation();
-    if (!calc) return;
+      const allOptionsForCart: SelectedOption[] = [...selectedOptions];
+      if (expressSelected && expressOption) {
+        allOptionsForCart.push({ option: expressOption, quantity: 1 });
+      }
 
-    const allOptionsForCart: SelectedOption[] = [...selectedOptions];
-    if (expressSelected && expressOption) {
-      allOptionsForCart.push({ option: expressOption, quantity: 1 });
-    }
+      addToCart({
+        width_mm: w,
+        depth_mm: d,
+        height_mm: h,
+        material: selectedMaterial,
+        thickness: selectedThickness,
+        selectedOptions: allOptionsForCart,
+        quantity,
+        totalPrice: calc.totalPrice,
+      });
 
-    addToCart({
-      width_mm: w,
-      depth_mm: d,
-      height_mm: h,
-      material: selectedMaterial,
-      thickness: selectedThickness,
-      selectedOptions: allOptionsForCart,
-      quantity,
-      totalPrice: calc.totalPrice,
+      onNavigate('cart');
     });
+    setShowConfirmModal(true);
+  };
 
-    onNavigate('cart');
+  const handleConfirmAddToCart = () => {
+    if (pendingAddToCart) {
+      pendingAddToCart();
+      setPendingAddToCart(null);
+      setShowConfirmModal(false);
+    }
+  };
+
+  const handleCancelAddToCart = () => {
+    setPendingAddToCart(null);
+    setShowConfirmModal(false);
   };
 
   const calc = calculation();
@@ -640,6 +653,53 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={handleCancelAddToCart}>
+          <div className="bg-white rounded-xl max-w-md w-full shadow-xl relative" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6">
+              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-amber-100 rounded-full">
+                <AlertCircle className="w-6 h-6 text-amber-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 text-center mb-2">
+                確認
+              </h3>
+              <p className="text-gray-700 text-center mb-6">
+                注文は内寸法で行います。このサイズで間違いありませんか？
+              </p>
+              {selectedMaterial && selectedThickness && (
+                <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                  <p className="text-sm text-gray-600 mb-2">注文内容:</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    サイズ: {width}mm × {depth}mm × {height}mm
+                  </p>
+                  <p className="text-sm font-medium text-gray-900">
+                    材料: {selectedMaterial.name} - {selectedThickness.thickness_mm}mm
+                  </p>
+                  <p className="text-sm font-medium text-gray-900">
+                    数量: {quantity}個
+                  </p>
+                </div>
+              )}
+              <div className="flex gap-3">
+                <button
+                  onClick={handleCancelAddToCart}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+                >
+                  キャンセル
+                </button>
+                <button
+                  onClick={handleConfirmAddToCart}
+                  className="flex-1 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors font-medium"
+                >
+                  確認してカートに追加
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Fitting Distance Image Modal */}
       {showFittingImageModal && (

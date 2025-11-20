@@ -10,7 +10,8 @@ import {
   Percent,
   LogOut,
   Menu,
-  X
+  X,
+  LineChart
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProtectedRoute } from '../hooks/useProtectedRoute';
@@ -46,7 +47,7 @@ interface AdminMenuItem {
 }
 
 const menuItems: AdminMenuItem[] = [
-  { id: 'dashboard', label: 'ダッシュボード', icon: LayoutDashboard },
+  { id: 'dashboard', label: '統計', icon: LineChart },
   { id: 'materials', label: '板材管理', icon: Package },
   { id: 'options', label: 'オプション管理', icon: Settings },
   { id: 'pricing', label: '価格設定', icon: Percent },
@@ -190,12 +191,21 @@ export function AdminPage({ onNavigate }: AdminPageProps) {
         {/* Top Header */}
         <header className="bg-white border-b border-gray-200 px-4 py-4 lg:px-8">
           <div className="flex items-center justify-between">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden text-gray-600 hover:text-gray-900"
-            >
-              <Menu className="w-6 h-6" />
-            </button>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden text-gray-600 hover:text-gray-900"
+              >
+                <Menu className="w-6 h-6" />
+              </button>
+              <button
+                onClick={() => onNavigate('dashboard')}
+                className='flex items-center gap-2 px-4 py-2 rounded-lg transition-colors bg-red-500 text-white hover:bg-red-400'
+              >
+                <LayoutDashboard className="w-5 h-5" />
+                <span className="font-medium">ダッシュボード</span>
+              </button>
+            </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">
                 {profile?.full_name || profile?.email}
@@ -217,7 +227,7 @@ export function AdminPage({ onNavigate }: AdminPageProps) {
 function AdminDashboard() {
   return (
     <div>
-      <h2 className="text-3xl font-bold text-gray-900 mb-6">ダッシュボード</h2>
+      <h2 className="text-3xl font-bold text-gray-900 mb-6">統計</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-sm font-medium text-gray-600 mb-2">今日の注文</h3>
@@ -428,7 +438,7 @@ function AdminMaterials() {
   };
 
   return (
-    <div>
+    <div className='h-[calc(90vh-53px)] overflow-auto'>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl font-bold text-gray-900">板材管理</h2>
         <button
