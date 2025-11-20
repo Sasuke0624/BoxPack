@@ -16,6 +16,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useProtectedRoute } from '../hooks/useProtectedRoute';
 import { supabase } from '../lib/supabase';
 import { Material, MaterialThickness } from '../types/database';
+import { AdminOptions } from './admin/AdminOptions';
+import { AdminPricing } from './admin/AdminPricing';
 
 interface AdminPageProps {
   onNavigate: (page: string) => void;
@@ -603,23 +605,6 @@ function AdminMaterials() {
   );
 }
 
-function AdminOptions() {
-  return (
-    <div>
-      <h2 className="text-3xl font-bold text-gray-900 mb-6">オプション管理</h2>
-      <p className="text-gray-600">実装予定</p>
-    </div>
-  );
-}
-
-function AdminPricing() {
-  return (
-    <div>
-      <h2 className="text-3xl font-bold text-gray-900 mb-6">価格設定</h2>
-      <p className="text-gray-600">実装予定</p>
-    </div>
-  );
-}
 
 function AdminOrders() {
   return (
