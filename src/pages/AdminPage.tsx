@@ -18,6 +18,7 @@ import { supabase } from '../lib/supabase';
 import { Material, MaterialThickness } from '../types/database';
 import { AdminOptions } from './admin/AdminOptions';
 import { AdminPricing } from './admin/AdminPricing';
+import { AdminOrders } from './admin/AdminOrders';
 
 interface AdminPageProps {
   onNavigate: (page: string) => void;
@@ -606,14 +607,6 @@ function AdminMaterials() {
 }
 
 
-function AdminOrders() {
-  return (
-    <div>
-      <h2 className="text-3xl font-bold text-gray-900 mb-6">注文管理</h2>
-      <p className="text-gray-600">実装予定</p>
-    </div>
-  );
-}
 
 function AdminInventory() {
   return (

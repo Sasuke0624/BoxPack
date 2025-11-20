@@ -59,6 +59,7 @@ export interface Order {
   };
   payment_method: string;
   payment_status: string;
+  shipping_eta?: string;
   created_at: string;
   updated_at: string;
 }
