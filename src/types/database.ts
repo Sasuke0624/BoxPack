@@ -123,3 +123,27 @@ export interface CustomerReview {
   comment: string;
   created_at: string;
 }
+
+export interface Inventory {
+  id: string;
+  material_id: string;
+  thickness_id: string;
+  current_stock: number;
+  min_stock_level: number;
+  unit: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InventoryHistory {
+  id: string;
+  inventory_id: string;
+  movement_type: 'in' | 'out' | 'adjustment';
+  quantity: number;
+  previous_stock: number;
+  new_stock: number;
+  reason?: string;
+  notes?: string;
+  created_by?: string;
+  created_at: string;
+}
