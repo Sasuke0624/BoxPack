@@ -20,6 +20,7 @@ import { AdminOptions } from './admin/AdminOptions';
 import { AdminPricing } from './admin/AdminPricing';
 import { AdminOrders } from './admin/AdminOrders';
 import { AdminInventory } from './admin/AdminInventory';
+import { AdminUsers } from './admin/AdminUsers';
 
 interface AdminPageProps {
   onNavigate: (page: string) => void;
@@ -610,14 +611,6 @@ function AdminMaterials() {
 
 
 
-function AdminUsers() {
-  return (
-    <div>
-      <h2 className="text-3xl font-bold text-gray-900 mb-6">ユーザー管理</h2>
-      <p className="text-gray-600">実装予定</p>
-    </div>
-  );
-}
 
 function AdminLegal() {
   return (
