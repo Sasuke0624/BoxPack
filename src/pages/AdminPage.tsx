@@ -21,6 +21,8 @@ import { AdminPricing } from './admin/AdminPricing';
 import { AdminOrders } from './admin/AdminOrders';
 import { AdminInventory } from './admin/AdminInventory';
 import { AdminUsers } from './admin/AdminUsers';
+import { AdminLegal } from './admin/AdminLegal';
+import { AdminDocuments } from './admin/AdminDocuments';
 
 interface AdminPageProps {
   onNavigate: (page: string) => void;
@@ -612,23 +614,6 @@ function AdminMaterials() {
 
 
 
-function AdminLegal() {
-  return (
-    <div>
-      <h2 className="text-3xl font-bold text-gray-900 mb-6">利用規約管理</h2>
-      <p className="text-gray-600">実装予定</p>
-    </div>
-  );
-}
-
-function AdminDocuments() {
-  return (
-    <div>
-      <h2 className="text-3xl font-bold text-gray-900 mb-6">書類管理</h2>
-      <p className="text-gray-600">実装予定</p>
-    </div>
-  );
-}
 
 // Material Modal Component
 interface MaterialModalProps {
