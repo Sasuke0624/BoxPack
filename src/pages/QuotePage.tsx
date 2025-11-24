@@ -62,9 +62,9 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
     const d = parseInt(depth) || 0;
     const h = parseInt(height) || 0;
 
-    // Check for dimension warning (>= 2400mm)
-    if (w >= 2400 || d >= 2400 || h >= 2400) {
-      setDimensionWarning('いずれかのサイズが2400mm以上です。このサイズで問題ありませんか？');
+    // Check for dimension warning (>= 2440mm)
+    if (w >= 2440 || d >= 2440 || h >= 2440) {
+      setDimensionWarning('最大サイズは2440mmです。');
     } else {
       setDimensionWarning(null);
     }

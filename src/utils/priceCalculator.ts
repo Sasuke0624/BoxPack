@@ -48,8 +48,8 @@ export function validateDimensions(width: number, depth: number, height: number)
     return 'すべてのサイズは0より大きい値を入力してください';
   }
 
-  if (width > 2400 || depth > 2400 || height > 2400) {
-    return 'サイズは2400mm以下で入力してください';
+  if (width > 2440 || depth > 2440 || height > 2440) {
+    return 'サイズは2440mm以下で入力してください';
   }
 
   return null;

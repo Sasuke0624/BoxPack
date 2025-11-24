@@ -192,7 +192,7 @@ export function HomePage({ onNavigate, onSelectMaterial }: HomePageProps) {
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">自由なカスタマイズ</h3>
               <p className="text-gray-600 leading-relaxed">
-                7種類の板材、5段階の厚み、取っ手・バックル・補強材などのオプションを自由に選択。
+                7種類の板材、取っ手・バックル・補強材などのオプションを自由に選択。
               </p>
             </div>
 
