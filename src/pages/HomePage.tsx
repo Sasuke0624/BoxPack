@@ -66,7 +66,8 @@ export function HomePage({ onNavigate, onSelectMaterial }: HomePageProps) {
     <div className="min-h-screen bg-white">
       {carouselImages.length > 0 && <Carousel images={carouselImages} />}
 
-      <section className="relative bg-gradient-to-b from-gray-50 to-white py-20 lg:py-32">
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#fdf8f1] via-white to-white py-20 lg:py-32">
+        <BackgroundShapes />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
@@ -315,6 +316,18 @@ export function HomePage({ onNavigate, onSelectMaterial }: HomePageProps) {
           </button>
         </div>
       </section>
+    </div>
+  );
+}
+
+function BackgroundShapes() {
+  return (
+    <div className="absolute inset-0 pointer-events-none">
+      <div className="hidden lg:block absolute -top-28 -right-16 w-[520px] h-[520px] bg-[#f6e7d8] opacity-90 rotate-[18deg] rounded-[72px]" />
+      <div className="hidden md:block absolute -bottom-48 -left-12 w-[420px] h-[420px] bg-[#efd4b6] opacity-80 rotate-[-22deg] rounded-[64px]" />
+      {/* <div className="absolute top-1/3 right-1/3 w-[220px] h-[220px] bg-gradient-to-br from-[#f4d4b2] to-[#e1b382] opacity-70 rounded-[48px]" /> */}
+      <div className="hidden md:block clip-wood-triangle absolute top-12 left-8 w-40 h-40 bg-gradient-to-b from-[#fef2e2] to-[#f3d5b5] opacity-80 rotate-6" />
+      <div className="hidden lg:block clip-wood-triangle absolute bottom-10 right-12 w-52 h-52 bg-gradient-to-b from-[#f0cfa7] to-[#dba577] opacity-70 rotate-[-8deg]" />
     </div>
   );
 }
