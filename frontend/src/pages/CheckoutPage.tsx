@@ -1,14 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { supabase } from '../lib/supabase';
 
-interface CheckoutPageProps {
-  onNavigate: (page: string) => void;
-}
-
-export function CheckoutPage({ onNavigate }: CheckoutPageProps) {
+export function CheckoutPage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { items, totalAmount, clearCart } = useCart();
 
@@ -27,7 +25,7 @@ export function CheckoutPage({ onNavigate }: CheckoutPageProps) {
   const [success, setSuccess] = useState(false);
 
   if (!user) {
-    onNavigate('login');
+    navigate('/login');
     return null;
   }
 
@@ -99,7 +97,7 @@ export function CheckoutPage({ onNavigate }: CheckoutPageProps) {
       setSuccess(true);
 
       setTimeout(() => {
-        onNavigate('mypage');
+        navigate('/mypage');
       }, 3000);
     } catch (err) {
       setError('注文の処理中にエラーが発生しました。もう一度お試しください。');
@@ -122,7 +120,7 @@ export function CheckoutPage({ onNavigate }: CheckoutPageProps) {
             マイページで注文状況を確認できます。
           </p>
           <button
-            onClick={() => onNavigate('mypage')}
+            onClick={() => navigate('/mypage')}
             className="px-6 py-3 text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-colors"
           >
             マイページへ
@@ -304,7 +302,7 @@ export function CheckoutPage({ onNavigate }: CheckoutPageProps) {
                   <span className="text-sm text-gray-600 flex-grow">
                     <button
                       type="button"
-                      onClick={() => onNavigate('terms')}
+                      onClick={() => navigate('/terms')}
                       className="text-gray-900 underline hover:text-gray-700 font-medium"
                     >
                       利用規約
@@ -312,7 +310,7 @@ export function CheckoutPage({ onNavigate }: CheckoutPageProps) {
                     と
                     <button
                       type="button"
-                      onClick={() => onNavigate('privacy')}
+                      onClick={() => navigate('/privacy')}
                       className="text-gray-900 underline hover:text-gray-700 font-medium"
                     >
                       個人情報保護方針

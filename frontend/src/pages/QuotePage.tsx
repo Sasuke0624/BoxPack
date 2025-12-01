@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Calculator, ShoppingCart, Download, Plus, Trash2, HelpCircle, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Material, MaterialThickness, Option, SelectedOption } from '../types/database';
@@ -6,11 +7,8 @@ import { calculatePrice, validateDimensions } from '../utils/priceCalculator';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 
-interface QuotePageProps {
-  onNavigate: (page: string) => void;
-}
-
-export function QuotePage({ onNavigate }: QuotePageProps) {
+export function QuotePage() {
+  const navigate = useNavigate();
   const [width, setWidth] = useState('');
   const [depth, setDepth] = useState('');
   const [height, setHeight] = useState('');
@@ -185,7 +183,7 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
   const handleAddToCart = () => {
     // Check if user is logged in
     if (!user) {
-      onNavigate('login');
+      navigate('/login');
       return;
     }
 
@@ -225,7 +223,7 @@ export function QuotePage({ onNavigate }: QuotePageProps) {
         totalPrice: calc.totalPrice,
       });
 
-      onNavigate('cart');
+      navigate('/cart');
     });
     setShowConfirmModal(true);
   };

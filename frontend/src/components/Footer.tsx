@@ -1,10 +1,7 @@
+import { Link } from 'react-router-dom';
 import { CONTACT_PHONE, CONTACT_EMAIL, CONTACT_ADDRESS } from '../constants/contact';
 
-interface FooterProps {
-  onNavigate: (page: string) => void;
-}
-
-export function Footer({ onNavigate }: FooterProps) {
+export function Footer() {
   return (
     <footer className="bg-white text-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -27,20 +24,20 @@ export function Footer({ onNavigate }: FooterProps) {
             <h3 className="text-black font-semibold mb-4">サービス</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <button
-                  onClick={() => onNavigate('quote')}
-                  className="transition-colors text-black"
+                <Link
+                  to="/quote"
+                  className="transition-colors text-black hover:underline"
                 >
                   見積もり作成
-                </button>
+                </Link>
               </li>
               <li>
-                <button
-                  onClick={() => onNavigate('home')}
-                  className="transition-colors text-black"
+                <Link
+                  to="/"
+                  className="transition-colors text-black hover:underline"
                 >
                   特徴・機能
-                </button>
+                </Link>
               </li>
             </ul>
           </div>
@@ -49,20 +46,20 @@ export function Footer({ onNavigate }: FooterProps) {
             <h3 className="font-semibold mb-4">法的情報</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <button
-                  onClick={() => onNavigate('terms')}
-                  className="transition-colors text-black"
+                <Link
+                  to="/terms"
+                  className="transition-colors text-black hover:underline"
                 >
                   利用規約
-                </button>
+                </Link>
               </li>
               <li>
-                <button
-                  onClick={() => onNavigate('privacy')}
-                  className="transition-colors text-black"
+                <Link
+                  to="/privacy"
+                  className="transition-colors text-black hover:underline"
                 >
                   個人情報保護方針
-                </button>
+                </Link>
               </li>
             </ul>
           </div>

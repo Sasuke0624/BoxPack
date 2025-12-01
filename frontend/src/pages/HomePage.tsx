@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { ArrowRight, Clock, Shield, Zap, Settings, FileText, Package } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowRight, Clock, Shield, Zap, Settings, FileText, Package, Box, Ruler, Calculator, CheckCircle2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Material, CarouselImage, CustomerReview } from '../types/database';
 import { Carousel } from '../components/Carousel';
@@ -7,11 +8,11 @@ import { MaterialCard } from '../components/MaterialCard';
 import { ReviewsSection } from '../components/ReviewsSection';
 
 interface HomePageProps {
-  onNavigate: (page: string) => void;
   onSelectMaterial?: (material: Material) => void;
 }
 
-export function HomePage({ onNavigate, onSelectMaterial }: HomePageProps) {
+export function HomePage({ onSelectMaterial }: HomePageProps) {
+  const navigate = useNavigate();
   const [carouselImages, setCarouselImages] = useState<CarouselImage[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [reviews, setReviews] = useState<CustomerReview[]>([]);
@@ -59,7 +60,7 @@ export function HomePage({ onNavigate, onSelectMaterial }: HomePageProps) {
     if (onSelectMaterial) {
       onSelectMaterial(material);
     }
-    onNavigate('quote');
+    navigate('/quote');
   };
 
   return (
@@ -81,7 +82,7 @@ export function HomePage({ onNavigate, onSelectMaterial }: HomePageProps) {
               見積り待ちのストレスから解放される、新しい木箱調達体験。
             </p>
             <button
-              onClick={() => onNavigate('quote')}
+              onClick={() => navigate('/quote')}
               className="inline-flex items-center px-8 py-4 text-lg font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-all transform hover:scale-105"
             >
               今すぐ見積もり作成
@@ -242,7 +243,7 @@ export function HomePage({ onNavigate, onSelectMaterial }: HomePageProps) {
         </div>
       </section>
 
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-gradient-to-b from-white via-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
@@ -253,45 +254,186 @@ export function HomePage({ onNavigate, onSelectMaterial }: HomePageProps) {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-amber-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-                1
+          {/* Desktop Flow - Horizontal with arrows */}
+          <div className="hidden lg:block">
+            <div className="flex items-start justify-between relative">
+              
+              {/* Step 1 */}
+              <div className="flex-1 relative z-10">
+                <div className="text-center">
+                  <div className="relative inline-block mb-6">
+                    <div className="w-24 h-24 bg-gradient-to-br from-amber-500 to-amber-700 rounded-2xl shadow-lg flex items-center justify-center transform hover:scale-110 transition-transform duration-300">
+                      <Box className="w-12 h-12 text-white" />
+                    </div>
+                    {/* <div className="absolute -top-2 -right-2 w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+                      1
+                    </div> */}
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">板材選択</h3>
+                  <p className="text-gray-600 text-sm max-w-[200px] mx-auto">
+                    ホームページから板材を選択します
+                  </p>
+                </div>
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">板材選択</h3>
-              <p className="text-gray-600">
-                ホームページから板材を選択します
-              </p>
+
+              {/* Arrow 1 */}
+              <div className="flex items-center justify-center px-4 pt-12">
+                <ArrowRight className="w-8 h-8 text-amber-600" />
+              </div>
+
+              {/* Step 2 */}
+              <div className="flex-1 relative z-10">
+                <div className="text-center">
+                  <div className="relative inline-block mb-6">
+                    <div className="w-24 h-24 bg-gradient-to-br from-amber-500 to-amber-700 rounded-2xl shadow-lg flex items-center justify-center transform hover:scale-110 transition-transform duration-300">
+                      <Ruler className="w-12 h-12 text-white" />
+                    </div>
+                      {/* <div className="absolute -top-2 -right-2 w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+                        2
+                      </div> */}
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">サイズと厚み</h3>
+                  <p className="text-gray-600 text-sm max-w-[200px] mx-auto">
+                    内寸サイズと板厚を入力
+                  </p>
+                </div>
+              </div>
+
+              {/* Arrow 2 */}
+              <div className="flex items-center justify-center px-4 pt-12">
+                <ArrowRight className="w-8 h-8 text-amber-600" />
+              </div>
+
+              {/* Step 3 */}
+              <div className="flex-1 relative z-10">
+                <div className="text-center">
+                  <div className="relative inline-block mb-6">
+                    <div className="w-24 h-24 bg-gradient-to-br from-amber-500 to-amber-700 rounded-2xl shadow-lg flex items-center justify-center transform hover:scale-110 transition-transform duration-300">
+                      <Calculator className="w-12 h-12 text-white" />
+                    </div>
+                    {/* <div className="absolute -top-2 -right-2 w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+                      3
+                    </div> */}
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">見積もり確認</h3>
+                  <p className="text-gray-600 text-sm max-w-[200px] mx-auto">
+                    即座に表示される価格を確認し、カートへ
+                  </p>
+                </div>
+              </div>
+
+              {/* Arrow 3 */}
+              <div className="flex items-center justify-center px-4 pt-12">
+                <ArrowRight className="w-8 h-8 text-amber-600" />
+              </div>
+
+              {/* Step 4 */}
+              <div className="flex-1 relative z-10">
+                <div className="text-center">
+                  <div className="relative inline-block mb-6">
+                    <div className="w-24 h-24 bg-gradient-to-br from-amber-500 to-amber-700 rounded-2xl shadow-lg flex items-center justify-center transform hover:scale-110 transition-transform duration-300">
+                      <CheckCircle2 className="w-12 h-12 text-white" />
+                    </div>
+                    {/* <div className="absolute -top-2 -right-2 w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+                      4
+                    </div> */}
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">注文完了</h3>
+                  <p className="text-gray-600 text-sm max-w-[200px] mx-auto">
+                    配送先と決済情報を入力して注文確定
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile/Tablet Flow - Vertical with arrows */}
+          <div className="lg:hidden space-y-8">
+            {/* Step 1 */}
+            <div className="flex items-start gap-4">
+              <div className="relative flex-shrink-0">
+                <div className="w-20 h-20 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl shadow-lg flex items-center justify-center">
+                  <Box className="w-10 h-10 text-white" />
+                </div>
+                {/* <div className="absolute -top-2 -right-2 w-7 h-7 bg-amber-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-md">
+                  1
+                </div> */}
+              </div>
+              <div className="flex-1 pt-2">
+                <h3 className="text-lg font-bold text-gray-900 mb-1">板材選択</h3>
+                <p className="text-gray-600 text-sm">
+                  ホームページから板材を選択します
+                </p>
+              </div>
             </div>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-amber-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-                2
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">サイズと厚み</h3>
-              <p className="text-gray-600">
-                内寸サイズと板厚を入力
-              </p>
+            {/* Arrow 1 */}
+            <div className="flex justify-center py-2">
+              <ArrowRight className="w-6 h-6 text-amber-600 rotate-90" />
             </div>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-amber-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-                3
+            {/* Step 2 */}
+            <div className="flex items-start gap-4">
+              <div className="relative flex-shrink-0">
+                <div className="w-20 h-20 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl shadow-lg flex items-center justify-center">
+                  <Ruler className="w-10 h-10 text-white" />
+                </div>
+                {/* <div className="absolute -top-2 -right-2 w-7 h-7 bg-amber-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-md">
+                  2
+                </div> */}
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">見積もり確認</h3>
-              <p className="text-gray-600">
-                即座に表示される価格を確認し、カートへ
-              </p>
+              <div className="flex-1 pt-2">
+                <h3 className="text-lg font-bold text-gray-900 mb-1">サイズと厚み</h3>
+                <p className="text-gray-600 text-sm">
+                  内寸サイズと板厚を入力
+                </p>
+              </div>
             </div>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-amber-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-                4
+            {/* Arrow 2 */}
+            <div className="flex justify-center py-2">
+              <ArrowRight className="w-6 h-6 text-amber-600 rotate-90" />
+            </div>
+
+            {/* Step 3 */}
+            <div className="flex items-start gap-4">
+              <div className="relative flex-shrink-0">
+                <div className="w-20 h-20 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl shadow-lg flex items-center justify-center">
+                  <Calculator className="w-10 h-10 text-white" />
+                </div>
+                {/* <div className="absolute -top-2 -right-2 w-7 h-7 bg-amber-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-md">
+                  3
+                </div> */}
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">注文完了</h3>
-              <p className="text-gray-600">
-                配送先と決済情報を入力して注文確定
-              </p>
+              <div className="flex-1 pt-2">
+                <h3 className="text-lg font-bold text-gray-900 mb-1">見積もり確認</h3>
+                <p className="text-gray-600 text-sm">
+                  即座に表示される価格を確認し、カートへ
+                </p>
+              </div>
+            </div>
+
+            {/* Arrow 3 */}
+            <div className="flex justify-center py-2">
+              <ArrowRight className="w-6 h-6 text-amber-600 rotate-90" />
+            </div>
+
+            {/* Step 4 */}
+            <div className="flex items-start gap-4">
+              <div className="relative flex-shrink-0">
+                <div className="w-20 h-20 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl shadow-lg flex items-center justify-center">
+                  <CheckCircle2 className="w-10 h-10 text-white" />
+                </div>
+                {/* <div className="absolute -top-2 -right-2 w-7 h-7 bg-amber-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-md">
+                  4
+                </div> */}
+              </div>
+              <div className="flex-1 pt-2">
+                <h3 className="text-lg font-bold text-gray-900 mb-1">注文完了</h3>
+                <p className="text-gray-600 text-sm">
+                  配送先と決済情報を入力して注文確定
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -308,7 +450,7 @@ export function HomePage({ onNavigate, onSelectMaterial }: HomePageProps) {
             ストレスフリーな体験を、今すぐお試しください。
           </p>
           <button
-            onClick={() => onNavigate('quote')}
+            onClick={() => navigate('/quote')}
             className="inline-flex items-center px-8 py-4 text-lg font-medium text-gray-900 bg-white rounded-lg hover:bg-gray-100 transition-all transform hover:scale-105"
           >
             無料で見積もり作成

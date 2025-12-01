@@ -1,21 +1,19 @@
 import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 
-interface CartPageProps {
-  onNavigate: (page: string) => void;
-}
-
-export function CartPage({ onNavigate }: CartPageProps) {
+export function CartPage() {
+  const navigate = useNavigate();
   const { items, removeFromCart, updateQuantity, totalAmount } = useCart();
   const { user } = useAuth();
 
   const handleCheckout = () => {
     if (!user) {
-      onNavigate('login');
+      navigate('/login');
       return;
     }
-    onNavigate('checkout');
+    navigate('/checkout');
   };
 
   if (items.length === 0) {
@@ -31,7 +29,7 @@ export function CartPage({ onNavigate }: CartPageProps) {
               見積もりを作成して、カートに商品を追加しましょう
             </p>
             <button
-              onClick={() => onNavigate('quote')}
+              onClick={() => navigate('/quote')}
               className="px-8 py-3 text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-colors"
             >
               見積もり作成へ
@@ -134,7 +132,7 @@ export function CartPage({ onNavigate }: CartPageProps) {
               </button>
 
               <button
-                onClick={() => onNavigate('quote')}
+                onClick={() => navigate('/quote')}
                 className="w-full mt-4 px-6 py-4 text-lg font-medium text-gray-900 bg-white border-2 border-gray-900 rounded-lg hover:bg-gray-50 transition-all"
               >
                 買い物を続ける

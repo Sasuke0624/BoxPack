@@ -1,8 +1,7 @@
-interface TermsPageProps {
-  onNavigate: (page: string) => void;
-}
+import { useNavigate } from 'react-router-dom';
 
-export function TermsPage({ onNavigate }: TermsPageProps) {
+export function TermsPage() {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -199,7 +198,7 @@ export function TermsPage({ onNavigate }: TermsPageProps) {
 
           <div className="mt-8 text-center">
             <button
-              onClick={() => onNavigate('home')}
+              onClick={() => navigate('/')}
               className="px-8 py-3 text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-colors"
             >
               ホームに戻る

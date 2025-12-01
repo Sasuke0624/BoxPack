@@ -1,12 +1,10 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
-interface LoginPageProps {
-  onNavigate: (page: string) => void;
-}
-
-export function LoginPage({ onNavigate }: LoginPageProps) {
+export function LoginPage() {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,7 +28,7 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
         if (error) {
           setError('ログインに失敗しました。メールアドレスとパスワードを確認してください。');
         } else {
-          onNavigate('mypage');
+          navigate('/mypage');
         }
       } else {
         if (!fullName.trim()) {
@@ -46,7 +44,7 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
         if (error) {
           setError('登録に失敗しました。入力内容を確認してください。');
         } else {
-        onNavigate('mypage');
+        navigate('/mypage');
         }
       }
     } catch (err) {

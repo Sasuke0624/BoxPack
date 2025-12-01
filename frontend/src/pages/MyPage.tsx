@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Package, Clock, CheckCircle, Truck } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Order, OrderItem, Profile } from '../types/database';
 
-interface MyPageProps {
-  onNavigate: (page: string) => void;
-}
-
-export function MyPage({ onNavigate }: MyPageProps) {
+export function MyPage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -19,7 +17,7 @@ export function MyPage({ onNavigate }: MyPageProps) {
       loadProfile();
       loadOrders();
     } else {
-      onNavigate('login');
+      navigate('/login');
     }
   }, [user]);
 
@@ -150,7 +148,7 @@ export function MyPage({ onNavigate }: MyPageProps) {
                     まだ注文がありません
                   </p>
                   <button
-                    onClick={() => onNavigate('quote')}
+                    onClick={() => navigate('/quote')}
                     className="px-6 py-3 text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-colors"
                   >
                     見積もり作成へ

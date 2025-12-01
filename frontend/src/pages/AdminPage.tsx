@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate, useLocation, Link } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Package, 
@@ -24,10 +25,6 @@ import { AdminInventory } from './admin/AdminInventory';
 import { AdminUsers } from './admin/AdminUsers';
 import { AdminLegal } from './admin/AdminLegal';
 import { AdminDocuments } from './admin/AdminDocuments';
-
-interface AdminPageProps {
-  onNavigate: (page: string) => void;
-}
 
 type AdminSection = 
   | 'dashboard' 
@@ -58,19 +55,23 @@ const menuItems: AdminMenuItem[] = [
   { id: 'documents', label: '書類管理', icon: FileText },
 ];
 
-export function AdminPage({ onNavigate }: AdminPageProps) {
-  const [currentSection, setCurrentSection] = useState<AdminSection>('dashboard');
+export function AdminPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { signOut, profile } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get current section from URL
+  const currentSection = location.pathname.split('/admin/')[1] || 'dashboard';
 
   // Protect route - only admins can access
   const { loading } = useProtectedRoute(() => {
-    onNavigate('home');
+    navigate('/');
   }, 'admin');
 
   const handleSignOut = async () => {
     await signOut();
-    onNavigate('home');
+    navigate('/');
   };
 
   if (loading) {
@@ -89,7 +90,7 @@ export function AdminPage({ onNavigate }: AdminPageProps) {
           <h1 className="text-2xl font-bold text-gray-900 mb-4">アクセス拒否</h1>
           <p className="text-gray-600 mb-6">管理者権限が必要です。</p>
           <button
-            onClick={() => onNavigate('home')}
+            onClick={() => navigate('/')}
             className="px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
           >
             ホームに戻る
@@ -98,31 +99,6 @@ export function AdminPage({ onNavigate }: AdminPageProps) {
       </div>
     );
   }
-
-  const renderSection = () => {
-    switch (currentSection) {
-      case 'dashboard':
-        return <AdminDashboard />;
-      case 'materials':
-        return <AdminMaterials />;
-      case 'options':
-        return <AdminOptions />;
-      case 'pricing':
-        return <AdminPricing />;
-      case 'orders':
-        return <AdminOrders />;
-      case 'inventory':
-        return <AdminInventory />;
-      case 'users':
-        return <AdminUsers />;
-      case 'legal':
-        return <AdminLegal />;
-      case 'documents':
-        return <AdminDocuments />;
-      default:
-        return <AdminDashboard />;
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -148,19 +124,20 @@ export function AdminPage({ onNavigate }: AdminPageProps) {
             <ul className="space-y-2">
               {menuItems.map((item) => {
                 const Icon = item.icon;
+                const isActive = currentSection === item.id;
                 return (
                   <li key={item.id}>
-                    <button
-                      onClick={() => setCurrentSection(item.id)}
+                    <Link
+                      to={`/admin/${item.id}`}
                       className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                        currentSection === item.id
+                        isActive
                           ? 'bg-amber-600 text-white'
                           : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                       }`}
                     >
                       <Icon className="w-5 h-5" />
                       <span>{item.label}</span>
-                    </button>
+                    </Link>
                   </li>
                 );
               })}
@@ -198,13 +175,13 @@ export function AdminPage({ onNavigate }: AdminPageProps) {
               >
                 <Menu className="w-6 h-6" />
               </button>
-              <button
-                onClick={() => onNavigate('dashboard')}
+              <Link
+                to="/admin/dashboard"
                 className='flex items-center gap-2 px-4 py-2 rounded-lg transition-colors bg-red-500 text-white hover:bg-red-400'
               >
                 <LayoutDashboard className="w-5 h-5" />
                 <span className="font-medium">ダッシュボード</span>
-              </button>
+              </Link>
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">
@@ -216,7 +193,19 @@ export function AdminPage({ onNavigate }: AdminPageProps) {
 
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto p-4 lg:p-8">
-          {renderSection()}
+          <Routes>
+            <Route index element={<AdminDashboard />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="materials" element={<AdminMaterials />} />
+            <Route path="options" element={<AdminOptions />} />
+            <Route path="pricing" element={<AdminPricing />} />
+            <Route path="orders" element={<AdminOrders />} />
+            <Route path="inventory" element={<AdminInventory />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="legal" element={<AdminLegal />} />
+            <Route path="documents" element={<AdminDocuments />} />
+            <Route path="*" element={<AdminDashboard />} />
+          </Routes>
         </main>
       </div>
     </div>

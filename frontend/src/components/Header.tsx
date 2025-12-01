@@ -1,20 +1,19 @@
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ShoppingCart, User, LogOut } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { CONTACT_PHONE, CONTACT_EMAIL, CONTACT_ADDRESS } from '../constants/contact';
 
-interface HeaderProps {
-  onNavigate: (page: string) => void;
-  currentPage: string;
-}
-
-export function Header({ onNavigate, currentPage }: HeaderProps) {
+export function Header() {
   const { user, signOut, profile } = useAuth();
   const { items } = useCart();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const currentPage = location.pathname;
 
   const handleSignOut = async () => {
     await signOut();
-    onNavigate('home');
+    navigate('/');
   };
 
   return (
@@ -43,56 +42,56 @@ export function Header({ onNavigate, currentPage }: HeaderProps) {
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <button
-            onClick={() => onNavigate('home')}
+          <Link
+            to="/"
             className="flex items-center space-x-2 text-gray-900 hover:text-gray-700 transition-colors"
           >
             <img src="./src/img/logo.png" alt="LOGO" className="w-8 h-8" />
             <span className="text-2xl font-bold tracking-tight text-blue-900">BOXPACK</span>
-          </button>
+          </Link>
 
           <nav className="hidden md:flex items-center space-x-8">
-            <button
-              onClick={() => onNavigate('home')}
+            <Link
+              to="/"
               className={`text-sm font-medium transition-colors ${
-                currentPage === 'home' ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
+                currentPage === '/' ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               ホーム
-            </button>
-            <button
-              onClick={() => onNavigate('quote')}
+            </Link>
+            <Link
+              to="/quote"
               className={`text-sm font-medium transition-colors ${
-                currentPage === 'quote' ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
+                currentPage === '/quote' ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               見積もり
-            </button>
+            </Link>
             {user && (
-              <button
-                onClick={() => onNavigate('mypage')}
+              <Link
+                to="/mypage"
                 className={`text-sm font-medium transition-colors ${
-                  currentPage === 'mypage' ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
+                  currentPage === '/mypage' ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
                 マイページ
-              </button>
+              </Link>
             )}
             {profile?.role === 'admin' && (
-              <button
-                onClick={() => onNavigate('admin')}
+              <Link
+                to="/admin/dashboard"
                 className={`text-sm font-medium transition-colors ${
-                  currentPage === 'admin' ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
+                  currentPage.startsWith('/admin') ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
                 管理ページ
-              </button>
+              </Link>
             )}
           </nav>
 
           <div className="flex items-center space-x-4">
-            <button
-              onClick={() => onNavigate('cart')}
+            <Link
+              to="/cart"
               className="relative p-2 text-gray-700 hover:text-gray-900 transition-colors"
             >
               <ShoppingCart className="w-6 h-6" />
@@ -101,16 +100,16 @@ export function Header({ onNavigate, currentPage }: HeaderProps) {
                   {items.length}
                 </span>
               )}
-            </button>
+            </Link>
 
             {user ? (
               <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => onNavigate('mypage')}
+                <Link
+                  to="/mypage"
                   className="p-2 text-gray-700 hover:text-gray-900 transition-colors"
                 >
                   <User className="w-6 h-6" />
-                </button>
+                </Link>
                 <button
                   onClick={handleSignOut}
                   className="p-2 text-gray-700 hover:text-gray-900 transition-colors"
@@ -119,12 +118,12 @@ export function Header({ onNavigate, currentPage }: HeaderProps) {
                 </button>
               </div>
             ) : (
-              <button
-                onClick={() => onNavigate('login')}
+              <Link
+                to="/login"
                 className="px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-colors"
               >
                 ログイン
-              </button>
+              </Link>
             )}
           </div>
         </div>
