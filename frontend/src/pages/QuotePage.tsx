@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Calculator, ShoppingCart, Download, Plus, Trash2, HelpCircle, X } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { materialsApi, optionsApi } from '../lib/api';
 import { Material, MaterialThickness, Option, SelectedOption } from '../types/database';
 import { calculatePrice, validateDimensions } from '../utils/priceCalculator';
 import { useCart } from '../contexts/CartContext';
@@ -76,43 +76,30 @@ export function QuotePage() {
   }, [width, depth, height]);
 
   const loadMaterials = async () => {
-    const { data } = await supabase
-      .from('materials')
-      .select('*')
-      .eq('is_active', true)
-      .order('sort_order');
-    if (data) {
-      setMaterials(data);
-      if (!selectedMaterial && data.length > 0) {
-        setSelectedMaterial(data[0]);
+    const { data, error } = await materialsApi.getAll(true);
+    if (!error && data) {
+      setMaterials(data.materials);
+      if (!selectedMaterial && data.materials.length > 0) {
+        setSelectedMaterial(data.materials[0]);
       }
     }
   };
 
   const loadThicknesses = async (materialId: string) => {
-    const { data } = await supabase
-      .from('material_thicknesses')
-      .select('*')
-      .eq('material_id', materialId)
-      .eq('is_available', true)
-      .order('thickness_mm');
-    if (data) {
-      setThicknesses(data);
-      if (data.length > 0) {
-        setSelectedThickness(data[0]);
+    const { data, error } = await materialsApi.getThicknesses(materialId, true);
+    if (!error && data) {
+      setThicknesses(data.thicknesses);
+      if (data.thicknesses.length > 0) {
+        setSelectedThickness(data.thicknesses[0]);
       }
     }
   };
 
   const loadOptions = async () => {
-    const { data } = await supabase
-      .from('options')
-      .select('*')
-      .eq('is_active', true)
-      .order('sort_order');
-    if (data) {
-      const express = data.find((o) => o.option_type === 'express') || null;
-      const normalOptions = data.filter((o) => o.option_type !== 'express');
+    const { data, error } = await optionsApi.getAll(true);
+    if (!error && data) {
+      const express = data.options.find((o) => o.option_type === 'express') || null;
+      const normalOptions = data.options.filter((o) => o.option_type !== 'express');
       setExpressOption(express);
       setOptions(normalOptions);
     }
@@ -346,28 +333,11 @@ export function QuotePage() {
               <div className="mt-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   板材サイズ
+                  <span className="text-xs text-red-700 ml-2">※一辺が1820mmを超えると、自動的に4×8サイズが選択され、単価が上がります。</span>
                 </label>
-                <div className="flex gap-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="3x6"
-                      checked={boardSize === '3x6'}
-                      onChange={(e) => setBoardSize(e.target.value as '3x6' | '4x8')}
-                      className="mr-2 h-4 w-4 text-amber-600 border-gray-300 focus:ring-amber-500"
-                    />
-                    <span className="text-sm text-gray-700">{'3×6 (910×1820mm)'}</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="4x8"
-                      checked={boardSize === '4x8'}
-                      onChange={(e) => setBoardSize(e.target.value as '4x8' | '3x6')}
-                      className="mr-2 h-4 w-4 text-amber-600 border-gray-300 focus:ring-amber-500"
-                    />
-                    <span className="text-sm text-gray-700">{'4×8 (1220×2440mm)'}</span>
-                  </label>
+                <div className="flex gap-4 items-center">
+                    <span className={`text-sm text-gray-700 px-2 py-1 rounded-md border-2 ${boardSize === '3x6' ? 'border-amber-600' : 'border-gray-200'}`}>{'3×6 (910×1820mm)'}</span>
+                    <span className={`text-sm text-gray-700 px-2 py-1 rounded-md border-2 ${boardSize === '4x8' ? 'border-amber-600' : 'border-gray-200'}`}>{'4×8 (1220×2440mm)'}</span>
                 </div>
               </div>
             </div>

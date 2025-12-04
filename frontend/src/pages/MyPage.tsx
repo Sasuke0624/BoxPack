@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Package, Clock, CheckCircle, Truck } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
+import { ordersApi, profilesApi } from '../lib/api';
 import { Order, OrderItem, Profile } from '../types/database';
 
 export function MyPage() {
@@ -14,38 +14,31 @@ export function MyPage() {
 
   useEffect(() => {
     if (user) {
-      loadProfile();
+      // loadProfile();
       loadOrders();
+      setProfile(user);
     } else {
       navigate('/login');
     }
   }, [user]);
 
-  const loadProfile = async () => {
-    if (!user) return;
+  // const loadProfile = async () => {
+  //   if (!user) return;
 
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .maybeSingle();
+  //   const { data, error } = await profilesApi.getMe();
 
-    if (data) {
-      setProfile(data);
-    }
-  };
+  //   if (!error && data) {
+  //     setProfile(data.profile);
+  //   }
+  // };
 
   const loadOrders = async () => {
     if (!user) return;
 
-    const { data } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
+    const { data, error } = await ordersApi.getMyOrders();
 
-    if (data) {
-      setOrders(data);
+    if (!error && data) {
+      setOrders(data.orders);
     }
     setLoading(false);
   };

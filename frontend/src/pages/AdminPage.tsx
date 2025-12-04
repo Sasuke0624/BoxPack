@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProtectedRoute } from '../hooks/useProtectedRoute';
-import { supabase } from '../lib/supabase';
+import { materialsApi } from '../lib/api';
 import { Material, MaterialThickness } from '../types/database';
 import { AdminOptions } from './admin/AdminOptions';
 import { AdminPricing } from './admin/AdminPricing';
@@ -176,7 +176,7 @@ export function AdminPage() {
                 <Menu className="w-6 h-6" />
               </button>
               <Link
-                to="/admin/dashboard"
+                to="/"
                 className='flex items-center gap-2 px-4 py-2 rounded-lg transition-colors bg-red-500 text-white hover:bg-red-400'
               >
                 <LayoutDashboard className="w-5 h-5" />
@@ -261,28 +261,21 @@ function AdminMaterials() {
 
   const loadMaterials = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('materials')
-      .select('*')
-      .order('sort_order');
+    const { data, error } = await materialsApi.getAll();
     if (error) {
-      setError(error.message);
+      setError(error);
     } else if (data) {
-      setMaterials(data);
+      setMaterials(data.materials);
     }
     setLoading(false);
   };
 
   const loadThicknesses = async (materialId: string) => {
-    const { data, error } = await supabase
-      .from('material_thicknesses')
-      .select('*')
-      .eq('material_id', materialId)
-      .order('thickness_mm');
+    const { data, error } = await materialsApi.getThicknesses(materialId);
     if (error) {
-      setError(error.message);
+      setError(error);
     } else if (data) {
-      setThicknesses(data);
+      setThicknesses(data.thicknesses);
     }
   };
 
@@ -295,18 +288,14 @@ function AdminMaterials() {
       ? Math.max(...materials.map(m => m.sort_order)) 
       : 0;
 
-    const { data, error } = await supabase
-      .from('materials')
-      .insert([{
-        ...materialData,
-        sort_order: maxSort + 1,
-        is_active: materialData.is_active ?? true,
-      }])
-      .select()
-      .single();
+    const { data, error } = await materialsApi.create({
+      ...materialData,
+      sort_order: maxSort + 1,
+      is_active: materialData.is_active ?? true,
+    });
 
     if (error) {
-      setError(error.message);
+      setError(error);
     } else if (data) {
       await loadMaterials();
       setShowMaterialModal(false);
@@ -318,13 +307,10 @@ function AdminMaterials() {
     setLoading(true);
     setError(null);
     
-    const { error } = await supabase
-      .from('materials')
-      .update(materialData)
-      .eq('id', id);
+    const { error } = await materialsApi.update(id, materialData);
 
     if (error) {
-      setError(error.message);
+      setError(error);
     } else {
       await loadMaterials();
       setShowMaterialModal(false);
@@ -340,13 +326,10 @@ function AdminMaterials() {
     setLoading(true);
     setError(null);
     
-    const { error } = await supabase
-      .from('materials')
-      .delete()
-      .eq('id', id);
+    const { error } = await materialsApi.delete(id);
 
     if (error) {
-      setError(error.message);
+      setError(error);
     } else {
       await loadMaterials();
       if (selectedMaterial?.id === id) {
@@ -362,18 +345,13 @@ function AdminMaterials() {
     setLoading(true);
     setError(null);
     
-    const { data, error } = await supabase
-      .from('material_thicknesses')
-      .insert([{
-        ...thicknessData,
-        material_id: selectedMaterial.id,
-        is_available: thicknessData.is_available ?? true,
-      }])
-      .select()
-      .single();
+    const { data, error } = await materialsApi.createThickness(selectedMaterial.id, {
+      ...thicknessData,
+      is_available: thicknessData.is_available ?? true,
+    });
 
     if (error) {
-      setError(error.message);
+      setError(error);
     } else if (data) {
       await loadThicknesses(selectedMaterial.id);
       setShowThicknessModal(false);
@@ -386,13 +364,10 @@ function AdminMaterials() {
     setLoading(true);
     setError(null);
     
-    const { error } = await supabase
-      .from('material_thicknesses')
-      .update(thicknessData)
-      .eq('id', id);
+    const { error } = await materialsApi.updateThickness(id, thicknessData);
 
     if (error) {
-      setError(error.message);
+      setError(error);
     } else {
       if (selectedMaterial) {
         await loadThicknesses(selectedMaterial.id);
@@ -411,13 +386,10 @@ function AdminMaterials() {
     setLoading(true);
     setError(null);
     
-    const { error } = await supabase
-      .from('material_thicknesses')
-      .delete()
-      .eq('id', id);
+    const { error } = await materialsApi.deleteThickness(id);
 
     if (error) {
-      setError(error.message);
+      setError(error);
     } else {
       if (selectedMaterial) {
         await loadThicknesses(selectedMaterial.id);

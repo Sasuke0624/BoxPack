@@ -8,7 +8,7 @@ import {
   X,
   Save
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { inventoryApi, materialsApi } from '../../lib/api';
 import { Material, MaterialThickness } from '../../types/database';
 
 interface Inventory {
@@ -58,12 +58,9 @@ export function AdminInventory() {
   }, [materials]);
 
   const loadMaterials = async () => {
-    const { data } = await supabase
-      .from('materials')
-      .select('*')
-      .order('sort_order');
+    const { data } = await materialsApi.getAll();
     if (data) {
-      setMaterials(data);
+      setMaterials(data.materials);
     }
   };
 
@@ -71,61 +68,30 @@ export function AdminInventory() {
     setLoading(true);
     setError(null);
 
-    const { data: inventoryData, error: fetchError } = await supabase
-      .from('inventory')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const { data, error: fetchError } = await inventoryApi.getAll();
 
     if (fetchError) {
-      setError(fetchError.message);
+      setError(fetchError);
       setLoading(false);
       return;
     }
 
-    if (!inventoryData) {
+    if (!data) {
       setLoading(false);
       return;
     }
 
-    // Load materials and thicknesses for each inventory item
-    const inventoryWithDetails = await Promise.all(
-      inventoryData.map(async (inv) => {
-        const { data: material } = await supabase
-          .from('materials')
-          .select('*')
-          .eq('id', inv.material_id)
-          .single();
-
-        const { data: thickness } = await supabase
-          .from('material_thicknesses')
-          .select('*')
-          .eq('id', inv.thickness_id)
-          .single();
-
-        return {
-          ...inv,
-          material: material || undefined,
-          thickness: thickness || undefined,
-        };
-      })
-    );
-
-    setInventory(inventoryWithDetails);
+    setInventory(data.inventory);
     setLoading(false);
   };
 
   const loadHistory = async (inventoryId: string) => {
-    const { data, error } = await supabase
-      .from('inventory_history')
-      .select('*')
-      .eq('inventory_id', inventoryId)
-      .order('created_at', { ascending: false })
-      .limit(50);
+    const { data, error } = await inventoryApi.getHistory(inventoryId);
 
     if (error) {
-      setError(error.message);
+      setError(error);
     } else if (data) {
-      setHistory(data);
+      setHistory(data.history);
     }
   };
 
@@ -133,57 +99,15 @@ export function AdminInventory() {
     setLoading(true);
     setError(null);
 
-    const inv = inventory.find(i => i.id === inventoryId);
-    if (!inv) {
-      setError('在庫情報が見つかりません');
-      setLoading(false);
-      return;
-    }
+    const { error } = await inventoryApi.updateStock(inventoryId, {
+      movement_type: movementType,
+      quantity,
+      reason,
+      notes
+    });
 
-    const previousStock = inv.current_stock;
-    let newStock = previousStock;
-
-    if (movementType === 'in') {
-      newStock = previousStock + quantity;
-    } else if (movementType === 'out') {
-      newStock = Math.max(0, previousStock - quantity);
-    } else if (movementType === 'adjustment') {
-      newStock = quantity;
-    }
-
-    // Update inventory
-    const { error: updateError } = await supabase
-      .from('inventory')
-      .update({
-        current_stock: newStock,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', inventoryId);
-
-    if (updateError) {
-      setError(updateError.message);
-      setLoading(false);
-      return;
-    }
-
-    // Create history record
-    const { data: user } = await supabase.auth.getUser();
-    console.log('user', user);
-    const { error: historyError } = await supabase
-      .from('inventory_history')
-      .insert({
-        inventory_id: inventoryId,
-        movement_type: movementType,
-        quantity: movementType === 'adjustment' ? newStock - previousStock : quantity,
-        previous_stock: previousStock,
-        new_stock: newStock,
-        reason: reason || null,
-        notes: notes || null,
-        created_by: user.data.user?.id || null,
-      });
-
-    if (historyError) {
-      setError(historyError.message);
+    if (error) {
+      setError(error);
     } else {
       await loadInventory();
       setShowStockModal(false);
@@ -197,21 +121,15 @@ export function AdminInventory() {
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase
-      .from('inventory')
-      .insert({
-        material_id: materialId,
-        thickness_id: thicknessId,
-        current_stock: initialStock,
-        min_stock_level: minStock,
-      });
+    const { error } = await inventoryApi.create({
+      material_id: materialId,
+      thickness_id: thicknessId,
+      current_stock: initialStock,
+      min_stock_level: minStock,
+    });
 
     if (error) {
-      if (error.code === '23505') { // Unique constraint violation
-        setError('この材料と厚みの組み合わせは既に登録されています');
-      } else {
-        setError(error.message);
-      }
+      setError(error);
     } else {
       await loadInventory();
     }
@@ -222,16 +140,10 @@ export function AdminInventory() {
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase
-      .from('inventory')
-      .update({
-        min_stock_level: minStock,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', inventoryId);
+    const { error } = await inventoryApi.updateMinStock(inventoryId, minStock);
 
     if (error) {
-      setError(error.message);
+      setError(error);
     } else {
       await loadInventory();
     }

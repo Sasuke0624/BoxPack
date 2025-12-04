@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit2, X } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { optionsApi } from '../../lib/api';
 import { Option } from '../../types/database';
 
 export function AdminOptions() {
@@ -16,14 +16,11 @@ export function AdminOptions() {
 
   const loadOptions = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('options')
-      .select('*')
-      .order('sort_order');
+    const { data, error } = await optionsApi.getAll();
     if (error) {
-      setError(error.message);
+      setError(error);
     } else if (data) {
-      setOptions(data);
+      setOptions(data.options);
     }
     setLoading(false);
   };
@@ -46,13 +43,10 @@ export function AdminOptions() {
     setLoading(true);
     setError(null);
     
-    const { error } = await supabase
-      .from('options')
-      .delete()
-      .eq('id', id);
+    const { error } = await optionsApi.delete(id);
 
     if (error) {
-      setError(error.message);
+      setError(error);
     } else {
       await loadOptions();
     }
@@ -65,13 +59,10 @@ export function AdminOptions() {
 
     if (editingOption) {
       // Update
-      const { error } = await supabase
-        .from('options')
-        .update(data)
-        .eq('id', editingOption.id);
+      const { error } = await optionsApi.update(editingOption.id, data);
 
       if (error) {
-        setError(error.message);
+        setError(error);
       } else {
         await loadOptions();
         setShowModal(false);
@@ -83,18 +74,14 @@ export function AdminOptions() {
         ? Math.max(...options.map(o => o.sort_order)) 
         : 0;
 
-      const { error } = await supabase
-        .from('options')
-        .insert([{
-          ...data,
-          sort_order: maxSort + 1,
-          is_active: data.is_active ?? true,
-        }])
-        .select()
-        .single();
+      const { error } = await optionsApi.create({
+        ...data,
+        sort_order: maxSort + 1,
+        is_active: data.is_active ?? true,
+      });
 
       if (error) {
-        setError(error.message);
+        setError(error);
       } else {
         await loadOptions();
         setShowModal(false);

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
-import { supabase } from '../lib/supabase';
+import { ordersApi } from '../lib/api';
 
 export function CheckoutPage() {
   const navigate = useNavigate();
@@ -41,8 +41,6 @@ export function CheckoutPage() {
     setLoading(true);
 
     try {
-      const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-
       const shippingAddress = {
         postal_code: postalCode,
         prefecture,
@@ -53,44 +51,28 @@ export function CheckoutPage() {
         phone,
       };
 
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          user_id: user.id,
-          order_number: orderNumber,
-          status: 'pending',
-          total_amount: totalAmount,
-          points_used: 0,
-          shipping_address: shippingAddress,
-          payment_method: paymentMethod,
-          payment_status: 'pending',
-        })
-        .select()
-        .single();
-
-      if (orderError || !order) {
-        throw new Error('注文の作成に失敗しました');
-      }
-
       const orderItems = items.map(item => ({
-        order_id: order.id,
         width_mm: item.width_mm,
         depth_mm: item.depth_mm,
         height_mm: item.height_mm,
         material_id: item.material.id,
         thickness_id: item.thickness.id,
-        selected_options: item.selectedOptions.map(o => o.id),
+        selected_options: item.selectedOptions.map(o => o.option.id),
         quantity: item.quantity,
         unit_price: item.totalPrice,
         subtotal: item.totalPrice * item.quantity,
       }));
 
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
+      const { data, error: orderError } = await ordersApi.create({
+        items: orderItems,
+        total_amount: totalAmount,
+        points_used: 0,
+        shipping_address: shippingAddress,
+        payment_method: paymentMethod,
+      });
 
-      if (itemsError) {
-        throw new Error('注文明細の作成に失敗しました');
+      if (orderError || !data) {
+        throw new Error('注文の作成に失敗しました');
       }
 
       clearCart();

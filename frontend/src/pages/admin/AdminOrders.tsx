@@ -8,7 +8,7 @@ import {
   Download,
   FileText
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { ordersApi } from '../../lib/api';
 import { Order, OrderItem, Material, MaterialThickness, Profile } from '../../types/database';
 
 interface OrderWithUser extends Order {
@@ -37,74 +37,24 @@ export function AdminOrders() {
     setLoading(true);
     setError(null);
 
-    let query = supabase
-      .from('orders')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (statusFilter !== 'all') {
-      query = query.eq('status', statusFilter);
-    }
-
-    const { data: ordersData, error: fetchError } = await query;
+    const { data, error: fetchError } = await ordersApi.getAll(statusFilter);
 
     if (fetchError) {
-      setError(fetchError.message);
+      setError(fetchError);
       setLoading(false);
       return;
     }
 
-    if (!ordersData) {
+    if (!data) {
       setLoading(false);
       return;
     }
-
-    // Load user profiles separately
-    const userIds = [...new Set(ordersData.map(order => order.user_id))];
-    const { data: profilesData } = await supabase
-      .from('profiles')
-      .select('id, email, full_name, company_name, phone')
-      .in('id', userIds);
-
-    const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
 
     // Load order items for each order
     const ordersWithItems = await Promise.all(
-      ordersData.map(async (order) => {
-        // Load order items
-        const { data: items } = await supabase
-          .from('order_items')
-          .select('*')
-          .eq('order_id', order.id);
-
-        // Load materials and thicknesses for items
-        const itemsWithDetails = await Promise.all(
-          (items || []).map(async (item) => {
-            const { data: material } = await supabase
-              .from('materials')
-              .select('id, name')
-              .eq('id', item.material_id)
-              .single();
-
-            const { data: thickness } = await supabase
-              .from('material_thicknesses')
-              .select('id, thickness_mm')
-              .eq('id', item.thickness_id)
-              .single();
-
-            return {
-              ...item,
-              material: material || undefined,
-              thickness: thickness || undefined,
-            };
-          })
-        );
-
-        return {
-          ...order,
-          user: profilesMap.get(order.user_id),
-          items: itemsWithDetails,
-        };
+      data.orders.map(async (order: any) => {
+        const { data: orderDetails } = await ordersApi.getById(order.id);
+        return orderDetails ? orderDetails.order : order;
       })
     );
 
@@ -120,16 +70,10 @@ export function AdminOrders() {
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase
-      .from('orders')
-      .update({ 
-        status: 'confirmed',
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', orderId);
+    const { error } = await ordersApi.updateStatus(orderId, 'confirmed');
 
     if (error) {
-      setError(error.message);
+      setError(error);
     } else {
       await loadOrders();
     }
@@ -145,17 +89,10 @@ export function AdminOrders() {
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase
-      .from('orders')
-      .update({ 
-        status: 'shipped',
-        shipping_eta: shippingEta,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', orderId);
+    const { error } = await ordersApi.updateStatus(orderId, 'shipped', shippingEta);
 
     if (error) {
-      setError(error.message);
+      setError(error);
     } else {
       await loadOrders();
       setShowShippingModal(false);

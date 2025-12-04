@@ -8,7 +8,7 @@ import {
   Save,
   Search
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { usersApi } from '../../lib/api';
 import { Profile } from '../../types/database';
 
 interface UserWithOrders extends Profile {
@@ -34,19 +34,10 @@ export function AdminUsers() {
     setLoading(true);
     setError(null);
 
-    let query = supabase
-      .from('profiles')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (roleFilter !== 'all') {
-      query = query.eq('role', roleFilter);
-    }
-
-    const { data, error: fetchError } = await query;
+    const { data, error: fetchError } = await usersApi.getAll(roleFilter);
 
     if (fetchError) {
-      setError(fetchError.message);
+      setError(fetchError);
       setLoading(false);
       return;
     }
@@ -56,26 +47,7 @@ export function AdminUsers() {
       return;
     }
 
-    // Load order statistics for each user
-    const usersWithStats = await Promise.all(
-      data.map(async (user) => {
-        const { data: orders } = await supabase
-          .from('orders')
-          .select('total_amount')
-          .eq('user_id', user.id);
-
-        const orderCount = orders?.length || 0;
-        const totalSpent = orders?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0;
-
-        return {
-          ...user,
-          orderCount,
-          totalSpent,
-        };
-      })
-    );
-
-    setUsers(usersWithStats);
+    setUsers(data.users);
     setLoading(false);
   };
 
@@ -97,24 +69,13 @@ export function AdminUsers() {
     setLoading(true);
     setError(null);
 
-    // Delete user from auth.users (this will cascade to profiles)
-    const { error: deleteError } = await supabase.auth.admin.deleteUser(id);
+    const { error } = await usersApi.delete(id);
 
-    if (deleteError) {
-      // If admin API is not available, try deleting from profiles
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', id);
-
-      if (profileError) {
-        setError(profileError.message);
-        setLoading(false);
-        return;
-      }
+    if (error) {
+      setError(error);
+    } else {
+      await loadUsers();
     }
-
-    await loadUsers();
     setLoading(false);
   };
 
@@ -124,16 +85,10 @@ export function AdminUsers() {
 
     if (selectedUser) {
       // Update existing user
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          ...userData,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', selectedUser.id);
+      const { error } = await usersApi.update(selectedUser.id, userData);
 
       if (error) {
-        setError(error.message);
+        setError(error);
       } else {
         await loadUsers();
         setShowModal(false);
@@ -500,15 +455,10 @@ function UserDetailModal({ user, onClose }: UserDetailModalProps) {
 
   const loadUserOrders = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false})
-      .limit(20);
+    const { data } = await usersApi.getById(user.id);
 
-    if (data) {
-      setOrders(data);
+    if (data && data.user.recentOrders) {
+      setOrders(data.user.recentOrders);
     }
     setLoading(false);
   };
