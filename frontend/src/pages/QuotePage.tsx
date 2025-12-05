@@ -52,7 +52,7 @@ export function QuotePage() {
     if (selectedMaterial) {
       loadThicknesses(selectedMaterial.id);
     }
-  }, [selectedMaterial]);
+  }, [selectedMaterial, boardSize]);
 
   // Real-time dimension validation and board size auto-selection
   useEffect(() => {
@@ -61,14 +61,14 @@ export function QuotePage() {
     const h = parseInt(height) || 0;
 
     // Check for dimension warning (>= 2440mm)
-    if (w >= 2440 || d >= 2440 || h >= 2440) {
+    if (w > 2440 || d > 2440 || h > 2440) {
       setDimensionWarning('最大サイズは2440mmです。');
     } else {
       setDimensionWarning(null);
     }
 
     // Auto-select board size based on dimensions
-    if (w >= 1820 || d >= 1820 || h >= 1820) {
+    if (w > 1820 || d > 1820 || h > 1820) {
       setBoardSize('4x8');
     } else if (w > 0 && d > 0 && h > 0 && w <= 1820 && d <= 1820 && h <= 1820) {
       setBoardSize('3x6');
@@ -88,9 +88,15 @@ export function QuotePage() {
   const loadThicknesses = async (materialId: string) => {
     const { data, error } = await materialsApi.getThicknesses(materialId, true);
     if (!error && data) {
-      setThicknesses(data.thicknesses);
-      if (data.thicknesses.length > 0) {
-        setSelectedThickness(data.thicknesses[0]);
+      // Filter thicknesses based on current board size
+      const filteredThicknesses = data.thicknesses.filter(
+        (t) => t.size === (boardSize === '3x6' ? 0 : 1)
+      );
+      setThicknesses(filteredThicknesses);
+      if (filteredThicknesses.length > 0) {
+        setSelectedThickness(filteredThicknesses[0]);
+      } else {
+        setSelectedThickness(null);
       }
     }
   };
@@ -588,9 +594,19 @@ export function QuotePage() {
                       <span>¥{calc.expressCharge.toLocaleString()}</span>
                     </div>
                   )}
+                  <div className="pt-4 border-t border-gray-200">
+                    <div className="flex justify-between text-gray-600">
+                      <span>小計</span>
+                      <span>¥{calc.subtotal.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-gray-600 mt-2">
+                      <span>消費税 (10%)</span>
+                      <span>¥{calc.vat.toLocaleString()}</span>
+                    </div>
+                  </div>
                   <div className="pt-4 border-t-2 border-gray-200">
                     <div className="flex justify-between items-center">
-                      <span className="text-lg font-bold text-gray-900">合計金額</span>
+                      <span className="text-lg font-bold text-gray-900">合計金額 (税込)</span>
                       <span className="text-2xl font-bold text-gray-900">
                         ¥{calc.totalPrice.toLocaleString()}
                       </span>
@@ -688,7 +704,7 @@ export function QuotePage() {
                 この距離は、箱の端から最初のベンドバックルまでの距離を指します。
               </p>
               <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-center min-h-[300px]">
-                <img src="./src/img/edge_dis.jpg" alt="端から最初の金具までの距離の説明図" className="max-w-full h-auto rounded-lg" />
+                <img src="http://162.43.33.101/api/img/edge_dis.jpg" alt="端から最初の金具までの距離の説明図" className="max-w-full h-auto rounded-lg" />
               </div>
             </div>
           </div>

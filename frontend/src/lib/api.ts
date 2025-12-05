@@ -1,6 +1,6 @@
 // API client for backend communication
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://162.43.33.101:3001/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://162.43.33.101/api';
 
 // Get auth token from localStorage
 const getAuthToken = (): string | null => {

@@ -173,13 +173,15 @@ export function MyPage() {
                         <div>
                           <p className="text-sm text-gray-600 mb-1">注文日</p>
                           <p className="text-gray-900">
-                            {new Date(order.created_at).toLocaleDateString('ja-JP')}
+                            {new Date(order.created_at).toLocaleDateString('ja-JP')}&nbsp;
+                            {new Date(order.created_at).toLocaleTimeString('ja-JP')}
                           </p>
                         </div>
                         <div>
                           <p className="text-sm text-gray-600 mb-1">配送予定日</p>
                           <p className="text-gray-900">
-                            {order.shipping_eta ? new Date(order.shipping_eta).toLocaleDateString('ja-JP') : '-'}
+                            {order.shipping_eta ? new Date(order.shipping_eta).toLocaleDateString('ja-JP') : '-'}&nbsp;
+                            {order.shipping_eta ? new Date(order.shipping_eta).toLocaleTimeString('ja-JP') : ''}
                           </p>
                         </div>
                         <div>

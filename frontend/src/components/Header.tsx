@@ -46,7 +46,7 @@ export function Header() {
             to="/"
             className="flex items-center space-x-2 text-gray-900 hover:text-gray-700 transition-colors"
           >
-            <img src="./src/img/logo.png" alt="LOGO" className="w-8 h-8" />
+            <img src="http://162.43.33.101/api/img/logo.png" alt="LOGO" className="w-8 h-8" />
             <span className="text-2xl font-bold tracking-tight text-blue-900">BOXPACK</span>
           </Link>
 

@@ -4,6 +4,8 @@ export interface PriceCalculation {
   materialCost: number;
   optionsCost: number;
   expressCharge: number;
+  subtotal: number;
+  vat: number;
   totalPrice: number;
 }
 
@@ -12,13 +14,14 @@ export function calculatePrice(
   depth_mm: number,
   height_mm: number,
   material: Material,
-  _thickness: MaterialThickness,
+  thickness: MaterialThickness,
   selectedOptions: SelectedOption[],
   quantity: number = 1
 ): PriceCalculation {
   const volume = width_mm + depth_mm + height_mm;
 
-  const baseMaterialCost = material.base_price * volume;
+  // Use the direct price from MaterialThickness
+  const baseMaterialCost = thickness.price * volume;
 
   let optionsCost = 0;
   let expressCharge = 0;
@@ -33,12 +36,16 @@ export function calculatePrice(
     }
   });
 
-  const totalPrice = (baseMaterialCost + optionsCost + expressCharge) * quantity;
+  const subtotal = (baseMaterialCost + optionsCost + expressCharge) * quantity;
+  const vat = Math.round(subtotal * 0.1); // 10% VAT
+  const totalPrice = subtotal + vat;
 
   return {
     materialCost: baseMaterialCost * quantity,
     optionsCost: optionsCost * quantity,
     expressCharge: expressCharge * quantity,
+    subtotal: Math.round(subtotal),
+    vat,
     totalPrice: Math.round(totalPrice),
   };
 }

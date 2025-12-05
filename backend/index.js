@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const compression = require('compression');
+const path = require('path');
 require('dotenv').config();
 
 const { securityHeaders, apiLimiter } = require('./middleware/security');
@@ -29,6 +30,7 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
+
 // Compression middleware
 app.use(compression());
 
@@ -53,13 +55,14 @@ app.get('/', (req, res) => {
 });
 
 // API routes
-app.use('/api/auth', authRoutes);
-app.use('/api/materials', apiLimiter, materialsRoutes);
-app.use('/api/options', apiLimiter, optionsRoutes);
-app.use('/api/orders', apiLimiter, ordersRoutes);
-app.use('/api/profiles', apiLimiter, profilesRoutes);
-app.use('/api/users', apiLimiter, usersRoutes);
-app.use('/api/inventory', apiLimiter, inventoryRoutes);
+app.use('/auth', authRoutes);
+app.use('/img', express.static(path.join(__dirname,'img')));
+app.use('/materials', apiLimiter, materialsRoutes);
+app.use('/options', apiLimiter, optionsRoutes);
+app.use('/orders', apiLimiter, ordersRoutes);
+app.use('/profiles', apiLimiter, profilesRoutes);
+app.use('/users', apiLimiter, usersRoutes);
+app.use('/inventory', apiLimiter, inventoryRoutes);
 
 // 404 handler
 app.use((req, res) => {

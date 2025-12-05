@@ -12,7 +12,8 @@ export interface MaterialThickness {
   id: string;
   material_id: string;
   thickness_mm: number;
-  price_multiplier: number;
+  price: number;
+  size: number; // 0 = 3x6, 1 = 4x8
   is_available: boolean;
 }
 
