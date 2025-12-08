@@ -94,12 +94,18 @@ router.put('/:id', authenticateToken, requireAdmin, materialValidation.update, a
     if (is_active !== undefined) updateData.is_active = is_active;
     if (sort_order !== undefined) updateData.sort_order = sort_order;
 
+    console.log(updateData);
+    console.log(req.params.id);
+
     const { data, error } = await supabaseAdmin
       .from('materials')
       .update(updateData)
       .eq('id', req.params.id)
       .select()
       .single();
+
+    console.log(data);
+    console.log(error);
 
     if (error) {
       return res.status(400).json({ error: error.message });
@@ -115,10 +121,14 @@ router.put('/:id', authenticateToken, requireAdmin, materialValidation.update, a
 // Delete material (admin only)
 router.delete('/:id', authenticateToken, requireAdmin, commonValidation.idParam, async (req, res) => {
   try {
+    console.log("here");
     const { error } = await supabaseAdmin
       .from('materials')
       .delete()
       .eq('id', req.params.id);
+    
+      console.log(req.params.id);
+      console.log(error);
 
     if (error) {
       return res.status(400).json({ error: error.message });
@@ -135,6 +145,7 @@ router.delete('/:id', authenticateToken, requireAdmin, commonValidation.idParam,
 router.get('/:id/thicknesses', commonValidation.idParam, async (req, res) => {
   try {
     const { available_only } = req.query;
+    // console.log(req);
     
     let query = supabaseAdmin
       .from('material_thicknesses')
@@ -162,14 +173,15 @@ router.get('/:id/thicknesses', commonValidation.idParam, async (req, res) => {
 // Create thickness (admin only)
 router.post('/:id/thicknesses', authenticateToken, requireAdmin, commonValidation.idParam, async (req, res) => {
   try {
-    const { thickness_mm, price_multiplier, is_available } = req.body;
+    const { thickness_mm, price, size, is_available } = req.body;
 
     const { data, error } = await supabaseAdmin
       .from('material_thicknesses')
       .insert({
         material_id: req.params.id,
         thickness_mm,
-        price_multiplier,
+        price,
+        size: size ?? 0,
         is_available: is_available ?? true
       })
       .select()
@@ -189,11 +201,12 @@ router.post('/:id/thicknesses', authenticateToken, requireAdmin, commonValidatio
 // Update thickness (admin only)
 router.put('/thicknesses/:thicknessId', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const { thickness_mm, price_multiplier, is_available } = req.body;
+    const { thickness_mm, price, size, is_available } = req.body;
 
     const updateData = {};
     if (thickness_mm !== undefined) updateData.thickness_mm = thickness_mm;
-    if (price_multiplier !== undefined) updateData.price_multiplier = price_multiplier;
+    if (price !== undefined) updateData.price = price;
+    if (size !== undefined) updateData.size = size;
     if (is_available !== undefined) updateData.is_available = is_available;
 
     const { data, error } = await supabaseAdmin
@@ -217,6 +230,7 @@ router.put('/thicknesses/:thicknessId', authenticateToken, requireAdmin, async (
 // Delete thickness (admin only)
 router.delete('/thicknesses/:thicknessId', authenticateToken, requireAdmin, async (req, res) => {
   try {
+    console.log("here");
     const { error } = await supabaseAdmin
       .from('material_thicknesses')
       .delete()

@@ -1,4 +1,4 @@
-export const CONTACT_PHONE = '03-1234-5678';
-export const CONTACT_EMAIL = 'support@boxpack.jp';
-export const CONTACT_ADDRESS = '〒150-0001 東京都渋谷区神宮前1-2-3 BOXPACKビル5F';
+export const CONTACT_PHONE = '0120-113983';
+export const CONTACT_EMAIL = 'info@cams.co.jp';
+export const CONTACT_ADDRESS = '〒520-3223 滋賀県湖南市夏見1234';
 

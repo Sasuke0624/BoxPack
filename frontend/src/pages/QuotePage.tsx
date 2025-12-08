@@ -52,7 +52,7 @@ export function QuotePage() {
     if (selectedMaterial) {
       loadThicknesses(selectedMaterial.id);
     }
-  }, [selectedMaterial]);
+  }, [selectedMaterial, boardSize]);
 
   // Real-time dimension validation and board size auto-selection
   useEffect(() => {
@@ -61,14 +61,14 @@ export function QuotePage() {
     const h = parseInt(height) || 0;
 
     // Check for dimension warning (>= 2440mm)
-    if (w >= 2440 || d >= 2440 || h >= 2440) {
+    if (w > 2440 || d > 2440 || h > 2440) {
       setDimensionWarning('最大サイズは2440mmです。');
     } else {
       setDimensionWarning(null);
     }
 
     // Auto-select board size based on dimensions
-    if (w >= 1820 || d >= 1820 || h >= 1820) {
+    if (w > 1820 || d > 1820 || h > 1820) {
       setBoardSize('4x8');
     } else if (w > 0 && d > 0 && h > 0 && w <= 1820 && d <= 1820 && h <= 1820) {
       setBoardSize('3x6');
@@ -88,9 +88,15 @@ export function QuotePage() {
   const loadThicknesses = async (materialId: string) => {
     const { data, error } = await materialsApi.getThicknesses(materialId, true);
     if (!error && data) {
-      setThicknesses(data.thicknesses);
-      if (data.thicknesses.length > 0) {
-        setSelectedThickness(data.thicknesses[0]);
+      // Filter thicknesses based on current board size
+      const filteredThicknesses = data.thicknesses.filter(
+        (t) => t.size === (boardSize === '3x6' ? 0 : 1)
+      );
+      setThicknesses(filteredThicknesses);
+      if (filteredThicknesses.length > 0) {
+        setSelectedThickness(filteredThicknesses[0]);
+      } else {
+        setSelectedThickness(null);
       }
     }
   };
@@ -120,7 +126,16 @@ export function QuotePage() {
       updated[existingIndex].quantity += 1;
       setSelectedOptions(updated);
     } else {
-      setSelectedOptions([...selectedOptions, { option, quantity: 1 }]);
+      // Initialize reinforcement dimensions if it's a reinforcement option
+      const newOption: SelectedOption = {
+        option,
+        quantity: 1,
+        ...(option.option_type === 'reinforcement' && {
+          reinforcementLength: 0,
+          reinforcementWidth: 0,
+        }),
+      };
+      setSelectedOptions([...selectedOptions, newOption]);
     }
     setSelectedOptionDropdown('');
     setError(null);
@@ -142,6 +157,22 @@ export function QuotePage() {
     setSelectedOptions(
       selectedOptions.map(o =>
         o.option.id === optionId ? { ...o, fittingDistance: distance } : o
+      )
+    );
+  };
+
+  const updateReinforcementLength = (optionId: string, length: number) => {
+    setSelectedOptions(
+      selectedOptions.map(o =>
+        o.option.id === optionId ? { ...o, reinforcementLength: length } : o
+      )
+    );
+  };
+
+  const updateReinforcementWidth = (optionId: string, width: number) => {
+    setSelectedOptions(
+      selectedOptions.map(o =>
+        o.option.id === optionId ? { ...o, reinforcementWidth: width } : o
       )
     );
   };
@@ -186,6 +217,16 @@ export function QuotePage() {
 
     if (!selectedMaterial || !selectedThickness) {
       setError('材料と厚みを選択してください');
+      return;
+    }
+
+    // Validate reinforcement options have dimensions
+    const invalidReinforcement = selectedOptions.find(
+      o => o.option.option_type === 'reinforcement' && 
+      (!o.reinforcementLength || !o.reinforcementWidth || o.reinforcementLength <= 0 || o.reinforcementWidth <= 0)
+    );
+    if (invalidReinforcement) {
+      setError('補強板オプションには長さと幅を入力してください');
       return;
     }
 
@@ -310,7 +351,7 @@ export function QuotePage() {
                 </div>
               </div>
 
-              <div className="mt-6">
+              {/* <div className="mt-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   数量
                 </label>
@@ -321,7 +362,7 @@ export function QuotePage() {
                   onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
                   className="w-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                 />
-              </div>
+              </div> */}
 
               {dimensionWarning && (
                 <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start space-x-3">
@@ -364,7 +405,7 @@ export function QuotePage() {
                       </p>
                       <p className="mb-2">{selectedMaterial.description}</p>
                       <p className="text-gray-600">
-                        基本単価: ¥{selectedMaterial.base_price.toLocaleString()}/mm
+                        基本単価: ¥{selectedThickness?.price.toLocaleString() || 0}/mm
                       </p>
                     </div>
                   )}
@@ -414,7 +455,7 @@ export function QuotePage() {
                     </p>
                     <p className="text-sm text-gray-600">
                       通常より早くお届けするオプションです。サイズに応じて即納料金が自動計算されます。<br />
-                      優先生産で納期短縮（+3円/mm）
+                      優先生産で納期短縮（+5円/mm）
                     </p>
                   </div>
                   <label className="inline-flex items-center gap-2">
@@ -518,33 +559,56 @@ export function QuotePage() {
                               />
                               <span className="text-sm text-gray-700">{selected.option.unit}</span>
                             </div>
-                            <div className="text-xs text-gray-600">
-                              数量 ({selected.quantity} {selected.option.unit}) × 単価 ¥
-                              {selected.option.price.toLocaleString()} ={' '}
-                              <span className="font-semibold text-gray-900">
-                                ¥{(selected.option.price * selected.quantity).toLocaleString()}
-                              </span>
-                            </div>
+                            {selected.option.option_type !== 'reinforcement' && (
+                              <div className="text-xs text-gray-600">
+                                数量 ({selected.quantity} {selected.option.unit}) × 単価 ¥
+                                {selected.option.price.toLocaleString()} ={' '}
+                                <span className="font-semibold text-gray-900">
+                                  ¥{(selected.option.price * selected.quantity).toLocaleString()}
+                                </span>
+                              </div>
+                            )}
                           </div>
-
-                          {selected.option.option_type === 'buckle' && (
-                            <div className="flex items-center gap-3">
-                              <label className="text-sm font-medium text-gray-700">
-                                端から距離（mm）:
-                              </label>
-                              <input
-                                type="number"
-                                min="0"
-                                value={selected.fittingDistance || ''}
-                                onChange={(e) =>
-                                  updateFittingDistance(
-                                    selected.option.id,
-                                    parseInt(e.target.value) || 0
-                                  )
-                                }
-                                className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                                placeholder="50"
-                              />
+                          {selected.option.option_type === 'reinforcement' && (
+                            <div className="space-y-3">
+                              <div className="flex gap-3">
+                                <div className="flex items-center gap-3">
+                                  <label className="text-sm font-medium text-gray-700">
+                                    長さ（mm）:
+                                  </label>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={selected.reinforcementLength || ''}
+                                    onChange={(e) => updateReinforcementLength(selected.option.id, parseInt(e.target.value) || 0)}
+                                    className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                                    placeholder="0"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <label className="text-sm font-medium text-gray-700">
+                                    幅（mm）:
+                                  </label>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={selected.reinforcementWidth || ''}
+                                    onChange={(e) => updateReinforcementWidth(selected.option.id, parseInt(e.target.value) || 0)}
+                                    className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                                    placeholder="0"
+                                  />
+                                </div>
+                              </div>
+                              {selected.reinforcementLength && selected.reinforcementWidth && (
+                                <div className="text-xs text-gray-600">
+                                  面積: {((selected.reinforcementLength * selected.reinforcementWidth) / 1000000).toFixed(4)} m² × 
+                                  単価 ¥{selected.option.price.toLocaleString()}/m² × 
+                                  数量 {selected.quantity} ={' '}
+                                  <span className="font-semibold text-gray-900">
+                                    ¥{Math.round((((selected.reinforcementLength * selected.reinforcementWidth) / 1000000) * selected.option.price + 300) * selected.quantity).toLocaleString()}
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
@@ -588,9 +652,19 @@ export function QuotePage() {
                       <span>¥{calc.expressCharge.toLocaleString()}</span>
                     </div>
                   )}
+                  <div className="pt-4 border-t border-gray-200">
+                    <div className="flex justify-between text-gray-600">
+                      <span>小計</span>
+                      <span>¥{calc.subtotal.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-gray-600 mt-2">
+                      <span>消費税 (10%)</span>
+                      <span>¥{calc.vat.toLocaleString()}</span>
+                    </div>
+                  </div>
                   <div className="pt-4 border-t-2 border-gray-200">
                     <div className="flex justify-between items-center">
-                      <span className="text-lg font-bold text-gray-900">合計金額</span>
+                      <span className="text-lg font-bold text-gray-900">合計金額 (税込)</span>
                       <span className="text-2xl font-bold text-gray-900">
                         ¥{calc.totalPrice.toLocaleString()}
                       </span>
@@ -688,7 +762,7 @@ export function QuotePage() {
                 この距離は、箱の端から最初のベンドバックルまでの距離を指します。
               </p>
               <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-center min-h-[300px]">
-                <img src="./src/img/edge_dis.jpg" alt="端から最初の金具までの距離の説明図" className="max-w-full h-auto rounded-lg" />
+                <img src="http://162.43.33.101/api/img/edge_dis.jpg" alt="端から最初の金具までの距離の説明図" className="max-w-full h-auto rounded-lg" />
               </div>
             </div>
           </div>

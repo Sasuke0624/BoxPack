@@ -12,7 +12,8 @@ export interface MaterialThickness {
   id: string;
   material_id: string;
   thickness_mm: number;
-  price_multiplier: number;
+  price: number;
+  size: number; // 0 = 3x6, 1 = 4x8
   is_available: boolean;
 }
 
@@ -64,6 +65,15 @@ export interface Order {
   updated_at: string;
 }
 
+export interface OrderOption {
+  option_id: string;
+  quantity: number;
+  option_type: 'handle' | 'buckle' | 'reinforcement' | 'express';
+  reinforcement_length?: number | null;
+  reinforcement_width?: number | null;
+  fitting_distance?: number | null;
+}
+
 export interface OrderItem {
   id: string;
   order_id: string;
@@ -72,7 +82,7 @@ export interface OrderItem {
   height_mm: number;
   material_id: string;
   thickness_id: string;
-  selected_options: string[];
+  selected_options: OrderOption[] | string[]; // Support both formats for backward compatibility
   quantity: number;
   unit_price: number;
   subtotal: number;
@@ -93,7 +103,8 @@ export interface Profile {
 export interface SelectedOption {
   option: Option;
   quantity: number;
-  fittingDistance?: number;
+  reinforcementLength?: number;
+  reinforcementWidth?: number;
 }
 
 export interface QuoteData {

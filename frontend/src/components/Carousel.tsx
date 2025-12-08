@@ -94,7 +94,7 @@ export function Carousel({ images }: CarouselProps) {
               }}
             >
               <img
-                src={`.${image.image_url}`}
+                src={`http://162.43.33.101/api/${image.image_url}`}
                 alt={image.title}
                 className="w-full h-full object-contain"
               />

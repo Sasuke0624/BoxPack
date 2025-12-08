@@ -12,7 +12,7 @@ export function MaterialCard({ material, onSelect }: MaterialCardProps) {
       <div className="aspect-square bg-gray-100 overflow-hidden">
         {material.image_url ? (
           <img
-            src={`.${material.image_url}`}
+            src={`http://162.43.33.101/api/${material.image_url}`}
             alt={material.name}
             className="w-full h-full object-cover hover:scale-105 transition-transform"
           />
