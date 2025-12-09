@@ -9,17 +9,24 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const { active_only } = req.query;
+    console.log("1");
     
     let query = supabaseAdmin
       .from('materials')
       .select('*')
       .order('sort_order');
 
+    console.log("query", query);
+
     if (active_only === 'true') {
       query = query.eq('is_active', true);
     }
 
+    console.log("query", query);
+
     const { data, error } = await query;
+
+    console.log("data", data);
 
     if (error) {
       return res.status(400).json({ error: error.message });
