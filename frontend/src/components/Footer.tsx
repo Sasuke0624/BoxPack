@@ -8,7 +8,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              <img src="http://162.43.33.101/api/img/logo.png" alt="LOGO" className="w-8 h-8" />
+              <img src="http://162.43.33.101/api/img/logo.webp" alt="LOGO" className="w-8 h-8" />
               <span className="text-2xl font-bold text-blue-900">BOXPACK</span>
             </div>
             <p className="text-sm leading-relaxed">

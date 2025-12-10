@@ -90,7 +90,7 @@ export function QuotePage() {
     if (!error && data) {
       // Filter thicknesses based on current board size
       const filteredThicknesses = data.thicknesses.filter(
-        (t) => t.size === (boardSize === '3x6' ? 0 : 1)
+        (t: MaterialThickness) => t.size === (boardSize === '3x6' ? 0 : 1)
       );
       setThicknesses(filteredThicknesses);
       if (filteredThicknesses.length > 0) {
@@ -762,7 +762,7 @@ export function QuotePage() {
                 この距離は、箱の端から最初のベンドバックルまでの距離を指します。
               </p>
               <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-center min-h-[300px]">
-                <img src="http://162.43.33.101/api/img/edge_dis.jpg" alt="端から最初の金具までの距離の説明図" className="max-w-full h-auto rounded-lg" />
+                <img src="http://162.43.33.101/api/img/edge_dis.webp" alt="端から最初の金具までの距離の説明図" className="max-w-full h-auto rounded-lg" />
               </div>
             </div>
           </div>

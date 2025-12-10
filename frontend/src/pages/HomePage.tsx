@@ -71,12 +71,12 @@ export function HomePage({ onSelectMaterial }: HomePageProps) {
         <BackgroundShapes />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight relative z-index-10">
               木箱を、もっと簡単に。
               <br />
               もっと早く。
             </h1>
-            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+            <p className="text-xl text-gray-600 mb-8 leading-relaxed relative z-index-10">
               サイズを入力するだけで、すぐ価格が出て、そのまま注文。
               <br />
               見積り待ちのストレスから解放される、新しい木箱調達体験。

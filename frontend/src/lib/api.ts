@@ -1,4 +1,5 @@
 // API client for backend communication
+import { Material, MaterialThickness, Option } from '../types/database';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://162.43.33.101/api';
 
@@ -24,9 +25,9 @@ async function apiRequest<T>(
 ): Promise<{ data: T | null; error: any }> {
   try {
     const token = getAuthToken();
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...options.headers,
+      ...(options.headers as Record<string, string>),
     };
 
     if (token) {
@@ -78,7 +79,7 @@ export const authApi = {
 export const materialsApi = {
   getAll: async (activeOnly: boolean = false) => {
     const query = activeOnly ? '?active_only=true' : '';
-    return apiRequest(`/materials${query}`, { method: 'GET' });
+    return apiRequest<{ materials: Material[] }>(`/materials${query}`, { method: 'GET' });
   },
 
   getById: async (id: string) => {
@@ -87,7 +88,7 @@ export const materialsApi = {
 
   getThicknesses: async (materialId: string, availableOnly: boolean = false) => {
     const query = availableOnly ? '?available_only=true' : '';
-    return apiRequest(`/materials/${materialId}/thicknesses${query}`, { method: 'GET' });
+    return apiRequest<{ thicknesses: MaterialThickness[] }>(`/materials/${materialId}/thicknesses${query}`, { method: 'GET' });
   },
 
   create: async (materialData: any) => {
@@ -131,7 +132,7 @@ export const materialsApi = {
 export const optionsApi = {
   getAll: async (activeOnly: boolean = false) => {
     const query = activeOnly ? '?active_only=true' : '';
-    return apiRequest(`/options${query}`, { method: 'GET' });
+    return apiRequest<{ options: Option[] }>(`/options${query}`, { method: 'GET' });
   },
 
   getById: async (id: string) => {
