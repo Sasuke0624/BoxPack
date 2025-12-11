@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const { supabaseAdmin } = require('../config/supabase');
 const { authValidation } = require('../middleware/validation');
 const { authLimiter } = require('../middleware/security');
+const { validate } = require('deep-email-validator');
 
 const router = express.Router();
 
@@ -15,10 +16,23 @@ const generateToken = (userId) => {
   );
 };
 
+async function validateEmail(email) {
+  const {valid, reason, validators} = await validate(email);
+  if (!valid) {
+    console.error(`Email validation failed: ${reason}`);
+    return false;
+  }
+  return true;
+}
+
 // Sign Up
 router.post('/signup', authLimiter, authValidation.signUp, async (req, res) => {
   try {
     const { email, password, full_name, company_name, phone } = req.body;
+
+    if (!await validateEmail(email)) {
+      return res.status(400).json({ error: 'Invalid email address' });
+    }
 
     // Create auth user using Supabase Admin
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
@@ -80,14 +94,19 @@ router.post('/signup', authLimiter, authValidation.signUp, async (req, res) => {
 // Sign In
 router.post('/signin', authLimiter, authValidation.signIn, async (req, res) => {
   try {
+    console.log(req.body);
     const { email, password } = req.body;
+    if (!await validateEmail(email)) {
+      return res.status(400).json({ error: 'Invalid email address' });
+    }
 
     // Authenticate with Supabase
     const { data: authData, error: authError } = await supabaseAdmin.auth.signInWithPassword({
       email,
       password
     });
-
+    console.log("authData", authData);
+    console.log("authError", authError);
     if (authError) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -102,6 +121,9 @@ router.post('/signin', authLimiter, authValidation.signIn, async (req, res) => {
       .select('*')
       .eq('id', authData.user.id)
       .single();
+
+    console.log("profile", profile);
+    console.log("profileError", profileError);
 
     if (profileError || !profile) {
       return res.status(404).json({ error: 'User profile not found' });

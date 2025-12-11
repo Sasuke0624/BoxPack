@@ -40,7 +40,19 @@ export function calculatePrice(
         optionsCost += reinforcementPrice * selected.quantity;
       }
     } else {
-      optionsCost += option.price * selected.quantity;
+      // For non-reinforcement options: calculate based on total fitting count
+      const totalFittingCount =
+        ((selected.fittingCountWidth || 0) +
+        (selected.fittingCountDepth || 0) +
+        (selected.fittingCountHeight || 0)) * 4;
+      
+      if (totalFittingCount > 0) {
+        // Use total fitting count if available
+        optionsCost += option.price * totalFittingCount;
+      } else {
+        // Fallback to quantity if fitting count is not set
+        optionsCost += option.price * selected.quantity;
+      }
     }
   });
 

@@ -105,6 +105,16 @@ export interface SelectedOption {
   quantity: number;
   reinforcementLength?: number;
   reinforcementWidth?: number;
+  // For non-reinforcement options: fitting configuration
+  fittingDistanceWidth?: number; // 横の最初のフィッティングまでの距離
+  fittingDistanceDepth?: number; // 縦の最初のフィッティングまでの距離
+  fittingDistanceHeight?: number; // 高さの最初のフィッティングまでの距離
+  fittingCountWidth?: number; // 横の金具の個数
+  fittingCountDepth?: number; // 縦の金具の個数
+  fittingCountHeight?: number; // 高さの金具の個数
+  fittingPositionsWidth?: number[]; // 横の金具の位置（mm）
+  fittingPositionsDepth?: number[]; // 縦の金具の位置（mm）
+  fittingPositionsHeight?: number[]; // 高さの金具の位置（mm）
 }
 
 export interface QuoteData {

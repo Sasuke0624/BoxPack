@@ -75,6 +75,53 @@ export function QuotePage() {
     }
   }, [width, depth, height]);
 
+  // Recalculate fitting positions when dimensions change
+  useEffect(() => {
+    const w = parseInt(width) || 0;
+    const d = parseInt(depth) || 0;
+    const h = parseInt(height) || 0;
+
+    if (w > 0 && d > 0 && h > 0) {
+      setSelectedOptions(prevOptions =>
+        prevOptions.map(o => {
+          if (o.option.option_type === 'reinforcement') return o;
+          
+          const updated = { ...o };
+          
+          // Recalculate width positions
+          if (updated.fittingCountWidth && updated.fittingDistanceWidth !== undefined) {
+            updated.fittingPositionsWidth = calculateFittingPositions(
+              w,
+              updated.fittingDistanceWidth,
+              updated.fittingCountWidth
+            );
+          }
+          
+          // Recalculate depth positions
+          if (updated.fittingCountDepth && updated.fittingDistanceDepth !== undefined) {
+            updated.fittingPositionsDepth = calculateFittingPositions(
+              d,
+              updated.fittingDistanceDepth,
+              updated.fittingCountDepth
+            );
+          }
+          
+          // Recalculate height positions
+          if (updated.fittingCountHeight && updated.fittingDistanceHeight !== undefined) {
+            updated.fittingPositionsHeight = calculateFittingPositions(
+              h,
+              updated.fittingDistanceHeight,
+              updated.fittingCountHeight
+            );
+          }
+          
+          return updated;
+        })
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [width, depth, height]);
+
   const loadMaterials = async () => {
     const { data, error } = await materialsApi.getAll(true);
     if (!error && data) {
@@ -153,14 +200,6 @@ export function QuotePage() {
     );
   };
 
-  const updateFittingDistance = (optionId: string, distance: number) => {
-    setSelectedOptions(
-      selectedOptions.map(o =>
-        o.option.id === optionId ? { ...o, fittingDistance: distance } : o
-      )
-    );
-  };
-
   const updateReinforcementLength = (optionId: string, length: number) => {
     setSelectedOptions(
       selectedOptions.map(o =>
@@ -173,6 +212,144 @@ export function QuotePage() {
     setSelectedOptions(
       selectedOptions.map(o =>
         o.option.id === optionId ? { ...o, reinforcementWidth: width } : o
+      )
+    );
+  };
+
+  // Calculate equal spacing positions
+  const calculateFittingPositions = (
+    dimension: number,
+    firstDistance: number,
+    count: number
+  ): number[] => {
+    if (count <= 0 || dimension <= 0 || firstDistance < 0) return [];
+    if (count === 1) return [firstDistance];
+    
+    const remainingSpace = dimension - firstDistance * 2;
+    if (remainingSpace <= 0) return [firstDistance];
+    
+    // Calculate spacing: remaining space divided by (count - 1) because first position is already at firstDistance
+    const spacing = remainingSpace / (count - 1);
+    const positions: number[] = [];
+    for (let i = 0; i < count; i++) {
+      positions.push(firstDistance + spacing * i);
+    }
+    return positions;
+  };
+
+  const updateFittingDistance = (
+    optionId: string,
+    dimension: 'width' | 'depth' | 'height',
+    distance: number
+  ) => {
+    setSelectedOptions(
+      selectedOptions.map(o => {
+        if (o.option.id !== optionId) return o;
+        const w = parseInt(width) || 0;
+        const d = parseInt(depth) || 0;
+        const h = parseInt(height) || 0;
+        
+        const updated = { ...o };
+        if (dimension === 'width') {
+          updated.fittingDistanceWidth = distance;
+          if (updated.fittingCountWidth && w > 0) {
+            updated.fittingPositionsWidth = calculateFittingPositions(
+              w,
+              distance,
+              updated.fittingCountWidth
+            );
+          }
+        } else if (dimension === 'depth') {
+          updated.fittingDistanceDepth = distance;
+          if (updated.fittingCountDepth && d > 0) {
+            updated.fittingPositionsDepth = calculateFittingPositions(
+              d,
+              distance,
+              updated.fittingCountDepth
+            );
+          }
+        } else if (dimension === 'height') {
+          updated.fittingDistanceHeight = distance;
+          if (updated.fittingCountHeight && h > 0) {
+            updated.fittingPositionsHeight = calculateFittingPositions(
+              h,
+              distance,
+              updated.fittingCountHeight
+            );
+          }
+        }
+        return updated;
+      })
+    );
+  };
+
+  const updateFittingCount = (
+    optionId: string,
+    dimension: 'width' | 'depth' | 'height',
+    count: number
+  ) => {
+    setSelectedOptions(
+      selectedOptions.map(o => {
+        if (o.option.id !== optionId) return o;
+        const w = parseInt(width) || 0;
+        const d = parseInt(depth) || 0;
+        const h = parseInt(height) || 0;
+        
+        const updated = { ...o };
+        if (dimension === 'width') {
+          updated.fittingCountWidth = count;
+          if (updated.fittingDistanceWidth !== undefined && w > 0) {
+            updated.fittingPositionsWidth = calculateFittingPositions(
+              w,
+              updated.fittingDistanceWidth,
+              count
+            );
+          } else {
+            updated.fittingPositionsWidth = [];
+          }
+        } else if (dimension === 'depth') {
+          updated.fittingCountDepth = count;
+          if (updated.fittingDistanceDepth !== undefined && d > 0) {
+            updated.fittingPositionsDepth = calculateFittingPositions(
+              d,
+              updated.fittingDistanceDepth,
+              count
+            );
+          } else {
+            updated.fittingPositionsDepth = [];
+          }
+        } else if (dimension === 'height') {
+          updated.fittingCountHeight = count;
+          if (updated.fittingDistanceHeight !== undefined && h > 0) {
+            updated.fittingPositionsHeight = calculateFittingPositions(
+              h,
+              updated.fittingDistanceHeight,
+              count
+            );
+          } else {
+            updated.fittingPositionsHeight = [];
+          }
+        }
+        return updated;
+      })
+    );
+  };
+
+  const updateFittingPositions = (
+    optionId: string,
+    dimension: 'width' | 'depth' | 'height',
+    positions: number[]
+  ) => {
+    setSelectedOptions(
+      selectedOptions.map(o =>
+        o.option.id === optionId
+          ? {
+              ...o,
+              ...(dimension === 'width' && { fittingPositionsWidth: positions }),
+              ...(dimension === 'depth' && { fittingPositionsDepth: positions }),
+              ...(dimension === 'height' && { fittingPositionsHeight: positions }),
+            }
+          : o
       )
     );
   };
@@ -298,8 +475,7 @@ export function QuotePage() {
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                 <p className="text-sm text-blue-900">
-                  <strong>重要:</strong> 入力するのは内寸（製品を入れるスペース）です。
-                  外寸で入力すると、製品が入らなくなる可能性があります。
+                  <strong>重要:</strong> 入力は内寸法での入力でお願いします。
                 </p>
               </div>
 
@@ -370,7 +546,7 @@ export function QuotePage() {
                   <p className="text-yellow-800 text-sm">{dimensionWarning}</p>
                 </div>
               )}
-
+{/* 
               <div className="mt-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   板材サイズ
@@ -380,7 +556,7 @@ export function QuotePage() {
                     <span className={`text-sm text-gray-700 px-2 py-1 rounded-md border-2 ${boardSize === '3x6' ? 'border-amber-600' : 'border-gray-200'}`}>{'3×6 (910×1820mm)'}</span>
                     <span className={`text-sm text-gray-700 px-2 py-1 rounded-md border-2 ${boardSize === '4x8' ? 'border-amber-600' : 'border-gray-200'}`}>{'4×8 (1220×2440mm)'}</span>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             <div className="bg-white rounded-xl shadow-sm p-8">
@@ -476,10 +652,20 @@ export function QuotePage() {
             </div>
 
             <div className="bg-white rounded-xl shadow-sm p-8">
+              <div className="flex gap-2 items-center">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">オプション</h2>
+              <button
+                type="button"
+                onClick={() => setShowFittingImageModal(true)}
+                className="ml-2 mb-6 inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-600 hover:text-gray-900 transition-colors"
+                aria-label="ヘルプ"
+              >
+                <HelpCircle className="w-8 h-8" />
+              </button>
+              </div>
 
               <div className="space-y-4">
-                <div className="mb-4">
+                {/* <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     端から最初の金具までの距離（mm）
                     <button
@@ -499,7 +685,8 @@ export function QuotePage() {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                     placeholder="例: 50"
                   />
-                </div>
+                  
+                </div> */}
 
                 <div className="flex gap-2">
                   <select
@@ -540,37 +727,250 @@ export function QuotePage() {
                         </div>
 
                         <div className="space-y-3">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-3">
-                              <label className="text-sm font-medium text-gray-700">
-                                数量:
-                              </label>
-                              <input
-                                type="number"
-                                min="1"
-                                value={selected.quantity}
-                                onChange={(e) =>
-                                  updateOptionQuantity(
-                                    selected.option.id,
-                                    Math.max(1, parseInt(e.target.value) || 1)
-                                  )
-                                }
-                                className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                              />
-                              <span className="text-sm text-gray-700">{selected.option.unit}</span>
-                            </div>
-                            {selected.option.option_type !== 'reinforcement' && (
-                              <div className="text-xs text-gray-600">
-                                数量 ({selected.quantity} {selected.option.unit}) × 単価 ¥
-                                {selected.option.price.toLocaleString()} ={' '}
-                                <span className="font-semibold text-gray-900">
-                                  ¥{(selected.option.price * selected.quantity).toLocaleString()}
-                                </span>
+                          {selected.option.option_type !== 'reinforcement' && (
+                              <div className="space-y-4 mt-4">
+                                {/* 横（幅）の設定 */}
+                                <div className="border border-gray-200 rounded-lg p-4 bg-white">
+                                  <h4 className="text-sm font-semibold text-gray-900 mb-3">横（幅）</h4>
+                                  <div className="grid grid-cols-2 gap-3 mb-3">
+                                    <div>
+                                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                                        最初のフィッティングまでの距離（mm）
+                                      </label>
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        value={selected.fittingDistanceWidth || ''}
+                                        onChange={(e) =>
+                                          updateFittingDistance(
+                                            selected.option.id,
+                                            'width',
+                                            parseFloat(e.target.value) || 0
+                                          )
+                                        }
+                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                                        placeholder="例: 50"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                                        金具の個数
+                                      </label>
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        value={selected.fittingCountWidth || ''}
+                                        onChange={(e) =>
+                                          updateFittingCount(
+                                            selected.option.id,
+                                            'width',
+                                            parseInt(e.target.value) || 0
+                                          )
+                                        }
+                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                                        placeholder="例: 3"
+                                      />
+                                    </div>
+                                  </div>
+                                  {selected.fittingPositionsWidth && selected.fittingPositionsWidth.length > 0 && (
+                                    <div>
+                                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                                        位置（mm）- カンマ区切りで編集可能
+                                      </label>
+                                      <input
+                                        type="text"
+                                        value={selected.fittingPositionsWidth.map(p => Math.round(p * 10) / 10).join(', ')}
+                                        onChange={(e) => {
+                                          const positions = e.target.value
+                                            .split(',')
+                                            .map(s => parseFloat(s.trim()) || 0)
+                                            .filter(p => !isNaN(p));
+                                          updateFittingPositions(selected.option.id, 'width', positions);
+                                        }}
+                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                                        placeholder="例: 50, 150, 250"
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* 縦（奥行）の設定 */}
+                                <div className="border border-gray-200 rounded-lg p-4 bg-white">
+                                  <h4 className="text-sm font-semibold text-gray-900 mb-3">縦（奥行）</h4>
+                                  <div className="grid grid-cols-2 gap-3 mb-3">
+                                    <div>
+                                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                                        最初のフィッティングまでの距離（mm）
+                                      </label>
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        value={selected.fittingDistanceDepth || ''}
+                                        onChange={(e) =>
+                                          updateFittingDistance(
+                                            selected.option.id,
+                                            'depth',
+                                            parseFloat(e.target.value) || 0
+                                          )
+                                        }
+                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                                        placeholder="例: 50"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                                        金具の個数
+                                      </label>
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        value={selected.fittingCountDepth || ''}
+                                        onChange={(e) =>
+                                          updateFittingCount(
+                                            selected.option.id,
+                                            'depth',
+                                            parseInt(e.target.value) || 0
+                                          )
+                                        }
+                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                                        placeholder="例: 3"
+                                      />
+                                    </div>
+                                  </div>
+                                  {selected.fittingPositionsDepth && selected.fittingPositionsDepth.length > 0 && (
+                                    <div>
+                                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                                        位置（mm）- カンマ区切りで編集可能
+                                      </label>
+                                      <input
+                                        type="text"
+                                        value={selected.fittingPositionsDepth.map(p => Math.round(p * 10) / 10).join(', ')}
+                                        onChange={(e) => {
+                                          const positions = e.target.value
+                                            .split(',')
+                                            .map(s => parseFloat(s.trim()) || 0)
+                                            .filter(p => !isNaN(p));
+                                          updateFittingPositions(selected.option.id, 'depth', positions);
+                                        }}
+                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                                        placeholder="例: 50, 150, 250"
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* 高さの設定 */}
+                                <div className="border border-gray-200 rounded-lg p-4 bg-white">
+                                  <h4 className="text-sm font-semibold text-gray-900 mb-3">高さ</h4>
+                                  <div className="grid grid-cols-2 gap-3 mb-3">
+                                    <div>
+                                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                                        最初のフィッティングまでの距離（mm）
+                                      </label>
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        value={selected.fittingDistanceHeight || ''}
+                                        onChange={(e) =>
+                                          updateFittingDistance(
+                                            selected.option.id,
+                                            'height',
+                                            parseFloat(e.target.value) || 0
+                                          )
+                                        }
+                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                                        placeholder="例: 50"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                                        金具の個数
+                                      </label>
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        value={selected.fittingCountHeight || ''}
+                                        onChange={(e) =>
+                                          updateFittingCount(
+                                            selected.option.id,
+                                            'height',
+                                            parseInt(e.target.value) || 0
+                                          )
+                                        }
+                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                                        placeholder="例: 3"
+                                      />
+                                    </div>
+                                  </div>
+                                  {selected.fittingPositionsHeight && selected.fittingPositionsHeight.length > 0 && (
+                                    <div>
+                                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                                        位置（mm）- カンマ区切りで編集可能
+                                      </label>
+                                      <input
+                                        type="text"
+                                        value={selected.fittingPositionsHeight.map(p => Math.round(p * 10) / 10).join(', ')}
+                                        onChange={(e) => {
+                                          const positions = e.target.value
+                                            .split('、')
+                                            .map(s => parseFloat(s.trim()) || 0)
+                                            .filter(p => !isNaN(p));
+                                          updateFittingPositions(selected.option.id, 'height', positions);
+                                        }}
+                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                                        placeholder="例: 50、150、250"
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* 総個数と見積もりの表示 */}
+                                {(() => {
+                                  const totalCount =
+                                    ((selected.fittingCountWidth || 0) +
+                                    (selected.fittingCountDepth || 0) +
+                                    (selected.fittingCountHeight || 0)) * 4;
+                                  const totalPrice = selected.option.price * totalCount;
+                                  return totalCount > 0 ? (
+                                    <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                      <div className="text-sm text-gray-700">
+                                        <div className="mb-1">
+                                          金属部品の総個数: <span className="font-semibold text-gray-900">{totalCount} {selected.option.unit}</span>
+                                        </div>
+                                        <div>
+                                          見積もり: <span className="font-semibold text-gray-900">¥{totalPrice.toLocaleString()}</span>
+                                          <span className="text-xs text-gray-600 ml-2">
+                                            ({totalCount} {selected.option.unit} × ¥{selected.option.price.toLocaleString()})
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ) : null;
+                                })()}
                               </div>
-                            )}
-                          </div>
+                          )}
                           {selected.option.option_type === 'reinforcement' && (
                             <div className="space-y-3">
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-3">
+                                  <label className="text-sm font-medium text-gray-700">
+                                    数量:
+                                  </label>
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    value={selected.quantity}
+                                    onChange={(e) =>
+                                      updateOptionQuantity(
+                                        selected.option.id,
+                                        Math.max(1, parseInt(e.target.value) || 1)
+                                      )
+                                    }
+                                    className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                                  />
+                                  <span className="text-sm text-gray-700">{selected.option.unit}</span>
+                                </div>
+                              </div>
                               <div className="flex gap-3">
                                 <div className="flex items-center gap-3">
                                   <label className="text-sm font-medium text-gray-700">
@@ -601,8 +1001,8 @@ export function QuotePage() {
                               </div>
                               {selected.reinforcementLength && selected.reinforcementWidth && (
                                 <div className="text-xs text-gray-600">
-                                  面積: {((selected.reinforcementLength * selected.reinforcementWidth) / 1000000).toFixed(4)} m² × 
-                                  単価 ¥{selected.option.price.toLocaleString()}/m² × 
+                                  (面積: {((selected.reinforcementLength * selected.reinforcementWidth) / 1000000).toFixed(4)} m² × 
+                                  単価 ¥{selected.option.price.toLocaleString()}/m² + ¥300) × 
                                   数量 {selected.quantity} ={' '}
                                   <span className="font-semibold text-gray-900">
                                     ¥{Math.round((((selected.reinforcementLength * selected.reinforcementWidth) / 1000000) * selected.option.price + 300) * selected.quantity).toLocaleString()}
@@ -748,7 +1148,7 @@ export function QuotePage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowFittingImageModal(false)}>
           <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-auto relative" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center">
-              <h3 className="text-xl font-bold text-gray-900">端から最初の金具までの距離</h3>
+              <h3 className="text-xl font-bold text-gray-900">組み立て箱 概要説明</h3>
               <button
                 onClick={() => setShowFittingImageModal(false)}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -758,11 +1158,11 @@ export function QuotePage() {
               </button>
             </div>
             <div className="p-6">
-              <p className="text-gray-700 mb-4">
+              {/* <p className="text-gray-700 mb-4">
                 この距離は、箱の端から最初のベンドバックルまでの距離を指します。
-              </p>
+              </p> */}
               <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-center min-h-[300px]">
-                <img src="http://162.43.33.101/api/img/edge_dis.webp" alt="端から最初の金具までの距離の説明図" className="max-w-full h-auto rounded-lg" />
+                <img src="http://162.43.33.101/api/img/option.webp" alt="端から最初の金具までの距離の説明図" className="max-w-full h-auto rounded-lg" />
               </div>
             </div>
           </div>

@@ -36,11 +36,13 @@ export function LoginPage() {
           setLoading(false);
           return;
         }
+        console.log(fullName, companyName, phone);
         const { error } = await signUp(email, password, {
           full_name: fullName,
           company_name: companyName,
           phone,
         });
+        console.log(error);
         if (error) {
           setError('登録に失敗しました。入力内容を確認してください。');
         } else {
