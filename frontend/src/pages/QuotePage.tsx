@@ -13,8 +13,7 @@ export function QuotePage() {
   const [depth, setDepth] = useState('');
   const [height, setHeight] = useState('');
   const [quantity, setQuantity] = useState(1);
-  const [boardSize, setBoardSize] = useState<'3x6' | '4x8'>('3x6');
-  const [fittingDistance, setFittingDistance] = useState('');
+  // const [boardSize, setBoardSize] = useState<'3x6' | '4x8'>('3x6');
   const [specialRequests, setSpecialRequests] = useState('');
   const [showFittingImageModal, setShowFittingImageModal] = useState(false);
   const [dimensionWarning, setDimensionWarning] = useState<string | null>(null);
@@ -52,7 +51,7 @@ export function QuotePage() {
     if (selectedMaterial) {
       loadThicknesses(selectedMaterial.id);
     }
-  }, [selectedMaterial, boardSize]);
+  }, [selectedMaterial]);
 
   // Real-time dimension validation and board size auto-selection
   useEffect(() => {
@@ -60,20 +59,44 @@ export function QuotePage() {
     const d = parseInt(depth) || 0;
     const h = parseInt(height) || 0;
 
+    const isLauan = selectedMaterial?.name === "ラワン合板";
+
     // Check for dimension warning (>= 2440mm)
-    if (w > 2440 || d > 2440 || h > 2440) {
-      setDimensionWarning('最大サイズは2440mmです。');
+    if (isLauan) {
+      if(w > 2440 || d > 2440 || h > 2440) {
+        setDimensionWarning('ラワン合板の最大サイズは2440mmです。');
+        return;
+      }
+
+      const countOver1220 = [w, d, h].filter(size => size > 1220).length;
+      if(countOver1220 > 1) {
+        setDimensionWarning('ラワン合板の場合、一つの次元が1220mm以上の場合、他の二つの次元は1220mm未満である必要があります。');
+        return;
+      }
+
+      setDimensionWarning(null);
     } else {
+      if(w > 1820 || d > 1820 || h > 1820) {
+        setDimensionWarning('針葉樹構造用合板とOSB合板の最大サイズは1820mmです。');
+        return;
+      }
+
+      const countOver910 = [w, d, h].filter(size => size > 910).length;
+      if(countOver910 > 1) {
+        setDimensionWarning('針葉樹構造用合板とOSB合板の場合、一つの次元が910mm以上の場合、他の二つの次元は910mm未満である必要があります。');
+        return;
+      }
+
       setDimensionWarning(null);
     }
 
     // Auto-select board size based on dimensions
-    if (w > 1820 || d > 1820 || h > 1820) {
-      setBoardSize('4x8');
-    } else if (w > 0 && d > 0 && h > 0 && w <= 1820 && d <= 1820 && h <= 1820) {
-      setBoardSize('3x6');
-    }
-  }, [width, depth, height]);
+    // if (w > 1820 || d > 1820 || h > 1820) {
+    //   setBoardSize('4x8');
+    // } else if (w > 0 && d > 0 && h > 0 && w <= 1820 && d <= 1820 && h <= 1820) {
+    //   setBoardSize('3x6');
+    // }
+  }, [width, depth, height, selectedMaterial]);
 
   // Recalculate fitting positions when dimensions change
   useEffect(() => {
@@ -136,15 +159,15 @@ export function QuotePage() {
     const { data, error } = await materialsApi.getThicknesses(materialId, true);
     if (!error && data) {
       // Filter thicknesses based on current board size
-      const filteredThicknesses = data.thicknesses.filter(
-        (t: MaterialThickness) => t.size === (boardSize === '3x6' ? 0 : 1)
-      );
-      setThicknesses(filteredThicknesses);
-      if (filteredThicknesses.length > 0) {
-        setSelectedThickness(filteredThicknesses[0]);
+      // const filteredThicknesses = data.thicknesses.filter(
+      //   (t: MaterialThickness) => t.size === (boardSize === '3x6' ? 0 : 1)
+      // );
+      setThicknesses(data.thicknesses);
+      if (data.thicknesses.length > 0) {
+        setSelectedThickness(data.thicknesses[0]);
       } else {
         setSelectedThickness(null);
-      }
+      }  
     }
   };
 
