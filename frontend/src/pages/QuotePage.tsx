@@ -148,6 +148,8 @@ const BendBuckleEdgeInput = memo(
     edgeLabel,
     highlightedEdgeIds,
     onUpdate,
+    onApplyToGroup,
+    onClearEdge,
   }: {
     group: keyof BendBuckleConfig;
     edge: 'edge1' | 'edge2' | 'edge3' | 'edge4';
@@ -158,6 +160,8 @@ const BendBuckleEdgeInput = memo(
       field: 'firstDistance' | 'count' | 'positions',
       value: number | number[]
     ) => void;
+    onApplyToGroup: (group: keyof BendBuckleConfig, sourceEdge: 'edge1' | 'edge2' | 'edge3' | 'edge4', firstDistance: number, count: number) => void;
+    onClearEdge: (group: keyof BendBuckleConfig, edge: 'edge1' | 'edge2' | 'edge3' | 'edge4') => void;
   }) => {
     const borderColors = {
       edge1: 'border-blue-200 bg-blue-50',
@@ -173,11 +177,45 @@ const BendBuckleEdgeInput = memo(
       edge4: 'bg-amber-600',
     };
 
+    const handleApplyToGroup = () => {
+      if(edgeConfig.firstDistance >= 40 && edgeConfig.count > 0) {
+        onApplyToGroup(group, edge, edgeConfig.firstDistance, edgeConfig.count);
+      }
+    };
+
+    const handleClearEdge = () => {
+      onClearEdge(group, edge);
+    };
+
+    const canApplyToGroup = edgeConfig.firstDistance >= 40 && edgeConfig.count > 0;
+
+
     return (
       <div className={`space-y-3 border-2 ${borderColors[edge]} rounded-lg p-4`}>
-        <div className="flex items-center gap-2 mb-2">
-          <div className={`w-3 h-3 ${dotColors[edge]} rounded-full`} />
-          <h4 className="text-sm font-semibold text-gray-900">{edgeLabel}</h4>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <div className={`w-3 h-3 ${dotColors[edge]} rounded-full`} />
+            <h4 className="text-sm font-semibold text-gray-900">{edgeLabel}</h4>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleApplyToGroup}
+              disabled={!canApplyToGroup}
+              className="px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              title="この辺の値をグループ内の他の3つの辺にも適用"
+            >
+              グループ全部同じ
+            </button>
+            <button
+              type="button"
+              onClick={handleClearEdge}
+              className="px-2 py-1 text-xs font-medium text-white bg-red-600 rounded hover:bg-red-700 transition-colors"
+              title="この辺の入力をすべてクリア"
+            >
+              不要
+            </button>
+          </div>
         </div>
 
         <BoxVisualization highlightedEdges={highlightedEdgeIds} />
@@ -255,15 +293,19 @@ const BendBuckleGroup = memo(({
   groupConfig,
   groupTitle,
   edgeLabels,
-  onGroupEnabledChange,
+  // onGroupEnabledChange,
   onEdgeUpdate,
+  onApplyToGroup,
+  onClearEdge,
 }: {
   group: keyof BendBuckleConfig;
   groupConfig: BendBuckleGroupConfig;
   groupTitle: string;
   edgeLabels: [string, string, string, string];
-  onGroupEnabledChange: (enabled: boolean) => void;
+  // onGroupEnabledChange: (enabled: boolean) => void;
   onEdgeUpdate: (group: keyof BendBuckleConfig, edge: 'edge1' | 'edge2' | 'edge3' | 'edge4', field: 'firstDistance' | 'count' | 'positions', value: number | number[]) => void;
+  onApplyToGroup: (group: keyof BendBuckleConfig, sourceEdge: 'edge1' | 'edge2' | 'edge3' | 'edge4', firstDistance: number, count: number) => void;
+  onClearEdge: (group: keyof BendBuckleConfig, edge: 'edge1' | 'edge2' | 'edge3' | 'edge4') => void;
 }) => {
   // group is used in updateBendBuckleEdge calls within BendBuckleEdgeInput
   console.log('groupConfig', groupConfig);
@@ -271,7 +313,7 @@ const BendBuckleGroup = memo(({
     <div className="border border-gray-200 rounded-lg p-4">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900">{groupTitle}</h3>
-        <label className="flex items-center gap-2">
+        {/* <label className="flex items-center gap-2">
           <input
             type="checkbox"
             checked={groupConfig.enabled}
@@ -279,9 +321,9 @@ const BendBuckleGroup = memo(({
             className="w-5 h-5 text-amber-600 border-gray-300 rounded"
           />
           <span className="text-sm text-gray-700">使用する</span>
-        </label>
+        </label> */}
       </div>
-      {groupConfig.enabled && (
+      {/* {groupConfig.enabled && ( */}
         <div className="grid md:grid-cols-2 gap-4">
           {(['edge1', 'edge2', 'edge3', 'edge4'] as const).map((edge, index) => (
             <BendBuckleEdgeInput
@@ -292,10 +334,12 @@ const BendBuckleGroup = memo(({
               edgeLabel={edgeLabels[index]}
               highlightedEdgeIds={getEdgeIds(group, edge)}
               onUpdate={(field, value) => onEdgeUpdate(group, edge, field, value)}
+              onApplyToGroup={onApplyToGroup}
+              onClearEdge={onClearEdge}
             />
           ))}
         </div>
-      )}
+      {/* )} */}
     </div>
   );
 });
@@ -467,11 +511,18 @@ const QuotePage = () => {
           const group = groupKey as keyof BendBuckleConfig;
           const groupConfig = updated[group];
           
-          if (group === 'top' || group === 'bottom') {
+
             // 上面・下面：edge1,edge3=幅, edge2,edge4=奥行
             ['edge1', 'edge2', 'edge3', 'edge4'].forEach((edgeKey) => {
               const edge = edgeKey as 'edge1' | 'edge2' | 'edge3' | 'edge4';
-              const dimension = (edge === 'edge1' || edge === 'edge3') ? w : d;
+              let dimension = 0;
+              if(group === 'top') {
+                dimension = w;
+              } else if (group === 'bottom') {
+                dimension = d;
+              } else {
+                dimension = h;
+              }
               if (groupConfig[edge].count > 0 && dimension > 0 && groupConfig[edge].firstDistance >= 0) {
                 groupConfig[edge].positions = calculateFittingPositions(
                   dimension,
@@ -480,19 +531,6 @@ const QuotePage = () => {
                 );
               }
             });
-          } else {
-            // 側面：すべて高さ
-            ['edge1', 'edge2', 'edge3', 'edge4'].forEach((edgeKey) => {
-              const edge = edgeKey as 'edge1' | 'edge2' | 'edge3' | 'edge4';
-              if (groupConfig[edge].count > 0 && h > 0 && groupConfig[edge].firstDistance >= 0) {
-                groupConfig[edge].positions = calculateFittingPositions(
-                  h,
-                  groupConfig[edge].firstDistance,
-                  groupConfig[edge].count
-                );
-              }
-            });
-          }
         });
         return updated;
       });
@@ -611,7 +649,7 @@ const QuotePage = () => {
     const spacing = remainingSpace / (count - 1);
     const positions: number[] = [];
     for (let i = 0; i < count; i++) {
-      positions.push(firstDistance + spacing * i);
+      positions.push(firstDistance + Math.round(spacing * i));
     }
     return positions;
   };
@@ -768,9 +806,11 @@ const QuotePage = () => {
         const h = parseInt(height) || 0;
         
         let dimension = 0;
-        if (group === 'top' || group === 'bottom') {
+        if (group === 'top'){
           // 上面・下面：edge1=幅, edge2=奥行, edge3=幅, edge4=奥行
-          dimension = (edge === 'edge1' || edge === 'edge3') ? w : d;
+          dimension = w;
+        } else if (group === 'bottom') {
+          dimension = d;
         } else {
           // 側面：すべて高さ
           dimension = h;
@@ -791,8 +831,10 @@ const QuotePage = () => {
         const h = parseInt(height) || 0;
         
         let dimension = 0;
-        if (group === 'top' || group === 'bottom') {
-          dimension = (edge === 'edge1' || edge === 'edge3') ? w : d;
+        if (group === 'top') {
+          dimension = w;
+        } else if (group === 'bottom') {
+          dimension = d;
         } else {
           dimension = h;
         }
@@ -831,14 +873,6 @@ const QuotePage = () => {
     return total;
   };
 
-  // 六面体の可視化用の関数とコンポーネント
-  // 等角投影の座標計算
-  
-
-  
-
-  
-
   const calculation = () => {
     const w = parseInt(width);
     const d = parseInt(depth);
@@ -854,6 +888,75 @@ const QuotePage = () => {
     }
 
     return calculatePrice(w, d, h, selectedMaterial, selectedThickness, allOptions, quantity);
+  };
+
+  // グループ内の他の辺に同じ値を適用
+  const applyEdgeToGroup = (
+    group: keyof BendBuckleConfig,
+    sourceEdge: 'edge1' | 'edge2' | 'edge3' | 'edge4',
+    firstDistance: number,
+    count: number
+  ) => {
+    setBendBuckleConfig(prev => {
+      const groupConfig = prev[group];
+      const w = parseInt(width) || 0;
+      const d = parseInt(depth) || 0;
+      const h = parseInt(height) || 0;
+      
+      const updatedGroup: BendBuckleGroupConfig = { ...groupConfig };
+      
+      // 残り3つの辺を取得
+      const allEdges: ('edge1' | 'edge2' | 'edge3' | 'edge4')[] = ['edge1', 'edge2', 'edge3', 'edge4'];
+      const otherEdges = allEdges.filter(e => e !== sourceEdge);
+      
+      // 各辺の位置を計算して適用
+      otherEdges.forEach((edge) => {
+        let dimension = 0;
+        if (group === 'top') {
+          dimension = w;
+        } else if (group === 'bottom') {
+          dimension = d;
+        } else {
+          dimension = h;
+        }
+        
+        const positions = (count > 0 && dimension > 0 && firstDistance >= 0)
+          ? calculateFittingPositions(dimension, firstDistance, count)
+          : [];
+        
+        updatedGroup[edge] = {
+          firstDistance,
+          count,
+          positions,
+        };
+      });
+      
+      return {
+        ...prev,
+        [group]: updatedGroup,
+      };
+    });
+  };
+
+  // 辺をクリア（初期化）
+  const clearBendBuckleEdge = (
+    group: keyof BendBuckleConfig,
+    edge: 'edge1' | 'edge2' | 'edge3' | 'edge4'
+  ) => {
+    setBendBuckleConfig(prev => {
+      const groupConfig = prev[group];
+      return {
+        ...prev,
+        [group]: {
+          ...groupConfig,
+          [edge]: {
+            firstDistance: 0,
+            count: 0,
+            positions: [],
+          },
+        },
+      };
+    });
   };
 
   const handleAddToCart = () => {
@@ -1141,30 +1244,38 @@ const QuotePage = () => {
                   group="top"
                   groupConfig={bendBuckleConfig.top}
                   groupTitle="上下面の幅 グループ"
-                  edgeLabels={['辺1: 前（幅方向）', '辺2: 右（奥行方向）', '辺3: 後（幅方向）', '辺4: 左（奥行方向）']}
-                  onGroupEnabledChange={(enabled) => updateBendBuckleGroupEnabled('top', enabled)}
+                  edgeLabels={['辺1', '辺2', '辺3', '辺4']}
+                  // onGroupEnabledChange={(enabled) => updateBendBuckleGroupEnabled('top', enabled)}
                   onEdgeUpdate={updateBendBuckleEdge}
-                />
-
-                {/* 側面 */}
-                <BendBuckleGroup
-                  group="sides"
-                  groupConfig={bendBuckleConfig.sides}
-                  groupTitle="上下面の深さ グループ"
-                  edgeLabels={['辺1: 前左', '辺2: 前右', '辺3: 後左', '辺4: 後右']}
-                  onGroupEnabledChange={(enabled) => updateBendBuckleGroupEnabled('sides', enabled)}
-                  onEdgeUpdate={updateBendBuckleEdge}
+                  onApplyToGroup={applyEdgeToGroup}
+                  onClearEdge={clearBendBuckleEdge}
                 />
 
                 {/* 下面 */}
                 <BendBuckleGroup
                   group="bottom"
                   groupConfig={bendBuckleConfig.bottom}
-                  groupTitle="上下面の高さ グループ"
-                  edgeLabels={['辺1: 前（幅方向）', '辺2: 右（奥行方向）', '辺3: 後（幅方向）', '辺4: 左（奥行方向）']}
-                  onGroupEnabledChange={(enabled) => updateBendBuckleGroupEnabled('bottom', enabled)}
+                  groupTitle="上下面の深さ グループ"
+                  edgeLabels={['辺1', '辺2', '辺3', '辺4']}
+                  // onGroupEnabledChange={(enabled) => updateBendBuckleGroupEnabled('bottom', enabled)}
                   onEdgeUpdate={updateBendBuckleEdge}
+                  onApplyToGroup={applyEdgeToGroup}
+                  onClearEdge={clearBendBuckleEdge}
                 />
+
+                {/* 側面 */}
+                <BendBuckleGroup
+                  group="sides"
+                  groupConfig={bendBuckleConfig.sides}
+                  groupTitle="上下面の高さ グループ"
+                  edgeLabels={['辺1', '辺2', '辺3', '辺4']}
+                  // onGroupEnabledChange={(enabled) => updateBendBuckleGroupEnabled('sides', enabled)}
+                  onEdgeUpdate={updateBendBuckleEdge}
+                  onApplyToGroup={applyEdgeToGroup}
+                  onClearEdge={clearBendBuckleEdge}
+                />
+
+                
 
                 {/* 総個数表示 */}
                 <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
