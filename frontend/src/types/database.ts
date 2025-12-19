@@ -22,10 +22,11 @@ export interface Option {
   name: string;
   description: string;
   price: number;
-  option_type: 'handle' | 'buckle' | 'reinforcement' | 'express';
+  option_type: 'handle' | 'buckle' | 'reinforcement' | 'express' | 'screw' | 'Skids';
   is_active: boolean;
   sort_order: number;
   unit: string;
+  img_url: string;
 }
 
 export interface SavedTemplate {
@@ -68,7 +69,7 @@ export interface Order {
 export interface OrderOption {
   option_id: string;
   quantity: number;
-  option_type: 'handle' | 'buckle' | 'reinforcement' | 'express';
+  option_type: 'handle' | 'buckle' | 'reinforcement' | 'express' | 'screw' | 'Skids';
   reinforcement_length?: number | null;
   reinforcement_width?: number | null;
   fitting_distance?: number | null;
@@ -117,6 +118,26 @@ export interface SelectedOption {
   fittingPositionsHeight?: number[]; // 高さの金具の位置（mm）
 }
 
+export interface BendBuckleEdgeConfig {
+  firstDistance: number; // 最初のフィッティングまでの距離
+  count: number; // 個数
+  positions: number[]; // 位置（mm）
+}
+
+export interface BendBuckleGroupConfig {
+  enabled: boolean; // このグループにベンドバックルを使用するか
+  edge1: BendBuckleEdgeConfig; // 1つ目の辺
+  edge2: BendBuckleEdgeConfig; // 2つ目の辺
+  edge3: BendBuckleEdgeConfig; // 3つ目の辺
+  edge4: BendBuckleEdgeConfig; // 4つ目の辺
+}
+
+export interface BendBuckleConfig {
+  top: BendBuckleGroupConfig; // 上面（4辺）
+  sides: BendBuckleGroupConfig; // 側面（4辺：高さ方向）
+  bottom: BendBuckleGroupConfig; // 下面（4辺）
+}
+
 export interface QuoteData {
   width_mm: number;
   depth_mm: number;
@@ -126,6 +147,7 @@ export interface QuoteData {
   selectedOptions: SelectedOption[];
   quantity: number;
   totalPrice: number;
+  bendBuckleConfig?: BendBuckleConfig; // ベンドバックル設定（オプション）
 }
 
 export interface CarouselImage {

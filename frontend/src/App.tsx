@@ -4,7 +4,7 @@ import { CartProvider } from './contexts/CartContext';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { HomePage } from './pages/HomePage';
-import { QuotePage } from './pages/QuotePage';
+import QuotePage from './pages/QuotePage';
 import { CartPage } from './pages/CartPage';
 import { LoginPage } from './pages/LoginPage';
 import { CheckoutPage } from './pages/CheckoutPage';
